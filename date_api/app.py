@@ -18,7 +18,7 @@ def get_current_date_time():
     current_date_time = current_time_utc_8.strftime("%Y-%m-%d %H:%M:%S")
 
     # Create a dictionary to hold the response data
-    response_data = {'current_date_time': current_date_time}
+    response_data = {'time': current_date_time}
 
     # Serialize the response data to JSON format
     json_response = json.dumps(response_data)
