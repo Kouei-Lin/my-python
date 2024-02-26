@@ -5,13 +5,13 @@ import json
 
 app = Flask(__name__)
 
-@app.route('/current_date_time', methods=['GET'])
+@app.route('/date', methods=['GET'])
 def get_current_date_time():
     # Get the current time in UTC
     current_time_utc = datetime.now(pytz.utc)
 
     # Convert the UTC time to the desired timezone (UTC+8)
-    target_timezone = pytz.timezone('Asia/Shanghai')  # UTC+8
+    target_timezone = pytz.timezone('Asia/Taipei')  # UTC+8
     current_time_utc_8 = current_time_utc.astimezone(target_timezone)
 
     # Format the time as a string
