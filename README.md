@@ -26,4 +26,4 @@
 `$ vim .env`
 
 ## Client 跑指令
-複製貼上`command.txt`中的範例指令
+複製貼上`command.txt`中的範例指令，`IP`改成伺服器，執行。
