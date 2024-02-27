@@ -18,8 +18,8 @@
 ## Server端跑項目
 `$ python3 app.py`
 
-## .env
-編輯各項目所需`.env`
+## Server .env
+如果有`.env_example`則需要編輯各項目所需`.env`
 
 `$ cp .env_example .env`
 
