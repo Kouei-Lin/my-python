@@ -1,1 +1,1 @@
-curl -X POST -H "Content-Type: application/json" -d '{"message": "Hello from Flask server!"}' http://xxx.xxx.xxx.xxx:5000/api/ntfy
+curl -X POST -H "Content-Type: application/json" -d '{"message": "Hello from Flask server!"}' http://localhost:5000/api/ntfy
