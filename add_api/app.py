@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify  # Import jsonify to return JSON responses
 
 app = Flask(__name__)
 
@@ -9,9 +9,9 @@ def add_numbers():
         num1 = data['num1']
         num2 = data['num2']
         result = num1 + num2
-        return {'result': result}  # Directly returning dictionary
+        return jsonify({'result': result})  # Return JSON response
     else:
-        return {'error': 'Missing parameters'}, 400  # Directly returning dictionary
+        return jsonify({'error': 'Missing parameters'}), 400  # Return JSON response with status code
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
