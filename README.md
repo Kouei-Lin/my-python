@@ -9,7 +9,7 @@
 
 `$ cd add_api`
 
-## 安裝套件
+## Server 安裝套件
 
 `$ pip install -r requirements.txt`
 
