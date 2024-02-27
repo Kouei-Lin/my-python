@@ -15,7 +15,7 @@
 
 [沒Python於此下載](https://www.python.org/downloads/)
 
-## Server端跑項目
+## Server 跑項目
 `$ python3 app.py`
 
 ## Server .env
@@ -25,5 +25,5 @@
 
 `$ vim .env`
 
-## Client端跑指令
+## Client 跑指令
 複製貼上`command.txt`中的範例指令
