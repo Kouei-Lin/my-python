@@ -5,7 +5,7 @@ import json
 
 app = Flask(__name__)
 
-@app.route('/date', methods=['GET'])
+@app.route('/api/date', methods=['GET'])
 def get_current_date_time():
     # Get the current time in UTC
     current_time_utc = datetime.now(pytz.utc)
