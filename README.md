@@ -25,5 +25,5 @@
 
 `$ vim .env`
 
-## Client端跑令
+## Client端跑指令
 複製貼上`command.txt`中的範例指令
