@@ -1,0 +1,3 @@
+Flask
+apprise
+python-dotenv
