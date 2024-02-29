@@ -1,107 +1,82 @@
 from flask import Flask, request, jsonify
-import sqlite3
+import csv
 
 app = Flask(__name__)
+CSV_FILE = 'network_data.csv'
 
-# Function to establish database connection
-def get_db_connection():
-    conn = sqlite3.connect('network_data.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+# Create CSV file if not exists
+def create_csv_file():
+    with open(CSV_FILE, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['id', 'name', 'mac_address', 'appear_before', 'interface', 'internet'])
 
-# Create SQLite database table if not exists
-def create_table():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS devices (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            mac_address TEXT NOT NULL UNIQUE,
-            appear_before TEXT NOT NULL,
-            interface TEXT NOT NULL,
-            internet TEXT NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
+# Function to read devices from CSV file
+def read_devices_from_csv():
+    devices = []
+    with open(CSV_FILE, 'r', newline='') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            devices.append(row)
+    return devices
+
+# Function to write devices to CSV file
+def write_devices_to_csv(devices):
+    with open(CSV_FILE, 'w', newline='') as file:
+        fieldnames = ['id', 'name', 'mac_address', 'appear_before', 'interface', 'internet']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for device in devices:
+            writer.writerow(device)
 
 # Create a new device
 @app.route('/api/mac', methods=['POST'])
 def add_device():
     new_device = request.json
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        INSERT INTO devices (name, mac_address, appear_before, interface, internet)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (new_device['name'], new_device['mac_address'], new_device['appear_before'], new_device['interface'], new_device['internet']))
-    conn.commit()
-    conn.close()
+    devices = read_devices_from_csv()
+    new_device['id'] = len(devices) + 1
+    devices.append(new_device)
+    write_devices_to_csv(devices)
     return jsonify({"message": "Device added successfully"}), 201
 
 # Get all devices
 @app.route('/api/mac', methods=['GET'])
 def get_devices():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM devices')
-    devices = cursor.fetchall()
-    conn.close()
-
-    devices_list = []
-    for device in devices:
-        # Convert Row object to dictionary
-        device_dict = dict(device)
-        devices_list.append(device_dict)
-
-    return jsonify(devices_list)
+    devices = read_devices_from_csv()
+    return jsonify(devices)
 
 # Get a single device by ID
 @app.route('/api/mac/<int:id>', methods=['GET'])
 def get_device(id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM devices WHERE id = ?', (id,))
-    device = cursor.fetchone()
-    conn.close()
-
-    if device:
-        device_dict = dict(device)
-        return jsonify(device_dict)
-    else:
-        return jsonify({"message": "Device not found"}), 404
+    devices = read_devices_from_csv()
+    for device in devices:
+        if int(device['id']) == id:
+            return jsonify(device)
+    return jsonify({"message": "Device not found"}), 404
 
 # Update a device by ID
 @app.route('/api/mac/<int:id>', methods=['PUT'])
 def update_device(id):
     updated_device = request.json
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        UPDATE devices
-        SET name = ?, mac_address = ?, appear_before = ?, interface = ?, internet = ?
-        WHERE id = ?
-    ''', (updated_device['name'], updated_device['mac_address'], updated_device['appear_before'], updated_device['interface'], updated_device['internet'], id))
-    conn.commit()
-    conn.close()
-
-    return jsonify({"message": "Device updated successfully"})
+    devices = read_devices_from_csv()
+    for device in devices:
+        if int(device['id']) == id:
+            device.update(updated_device)
+            write_devices_to_csv(devices)
+            return jsonify({"message": "Device updated successfully"})
+    return jsonify({"message": "Device not found"}), 404
 
 # Delete a device by ID
 @app.route('/api/mac/<int:id>', methods=['DELETE'])
 def delete_device(id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM devices WHERE id = ?', (id,))
-    conn.commit()
-    conn.close()
-
-    return jsonify({"message": "Device deleted successfully"})
+    devices = read_devices_from_csv()
+    for device in devices:
+        if int(device['id']) == id:
+            devices.remove(device)
+            write_devices_to_csv(devices)
+            return jsonify({"message": "Device deleted successfully"})
+    return jsonify({"message": "Device not found"}), 404
 
 if __name__ == '__main__':
-    create_table()
+    create_csv_file()
     app.run(host='0.0.0.0', port=5000, debug=True)
 
