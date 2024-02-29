@@ -2,7 +2,7 @@
 curl http://localhost:5000/api/mac
 
 # GET with id
-curl http://localhost:5000/api/mac/1
+curl http://localhost:5000/api/mac/0
 
 # POST
 curl -X POST -H "Content-Type: application/json" -d '{"name":"NewDevice","mac_address":"00:11:22:33:44:55","appear_before":"No","interface":"eth0","internet":"Success"}' http://localhost:5000/api/mac
