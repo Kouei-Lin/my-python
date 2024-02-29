@@ -6,9 +6,10 @@ CSV_FILE = 'network_data.csv'
 
 # Create CSV file if not exists
 def create_csv_file():
-    with open(CSV_FILE, 'a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['name', 'mac_address', 'appear_before', 'interface', 'internet'])
+    if not os.path.isfile(CSV_FILE):
+        with open(CSV_FILE, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['id', 'name', 'mac_address', 'appear_before', 'interface', 'internet'])
 
 # Function to read devices from CSV file
 def read_devices_from_csv():

@@ -3,13 +3,3 @@ curl http://localhost:5000/api/mac
 
 # GET with id
 curl http://localhost:5000/api/mac/1
-
-# POST
-curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"John\",\"mac_address\":\"00:11:22:33:44:55\",\"appear_before\":\"Yes\",\"interface\":\"eth0\",\"internet\":\"Success\"}" http://localhost:5000/api/mac
-
-# PUT
-curl -X PUT -H "Content-Type: application/json" -d "{\"name\":\"Jane\",\"mac_address\":\"00:11:22:33:44:55\",\"appear_before\":\"No\",\"interface\":\"eth1\",\"internet\":\"Failed\"}" http://localhost:5000/api/mac/1
-
-# DELETE
-curl -X DELETE http://localhost:5000/api/mac/1
-
