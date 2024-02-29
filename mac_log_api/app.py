@@ -33,18 +33,10 @@ def add_device():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Check if MAC address already exists in the database
-    cursor.execute('SELECT * FROM devices WHERE mac_address = ?', (new_device['mac_address'],))
-    existing_device = cursor.fetchone()
-    if existing_device:
-        appear_before = "No"
-    else:
-        appear_before = "Yes"
-
-    # Add the new device to the database
     cursor.execute('''
-        INSERT INTO devices (name, mac_address, appear_before, interface, internet) VALUES (?, ?, ?, ?, ?)
-    ''', (new_device['name'], new_device['mac_address'], appear_before, new_device['interface'], new_device['internet']))
+        INSERT INTO devices (name, mac_address, appear_before, interface, internet)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (new_device['name'], new_device['mac_address'], new_device['appear_before'], new_device['interface'], new_device['internet']))
     conn.commit()
     conn.close()
     return jsonify({"message": "Device added successfully"}), 201
@@ -57,7 +49,19 @@ def get_devices():
     cursor.execute('SELECT * FROM devices')
     devices = cursor.fetchall()
     conn.close()
-    return jsonify(devices)
+
+    devices_list = []
+    for device in devices:
+        device_dict = {
+            'name': device['name'],
+            'mac_address': device['mac_address'],
+            'appear_before': device['appear_before'],
+            'interface': device['interface'],
+            'internet': device['internet']
+        }
+        devices_list.append(device_dict)
+
+    return jsonify(devices_list)
 
 if __name__ == '__main__':
     create_table()
