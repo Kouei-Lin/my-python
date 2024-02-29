@@ -1,92 +1,76 @@
 from flask import Flask, request, jsonify
-import csv
-from datetime import datetime, timedelta
+import json
+from datetime import datetime
 
 app = Flask(__name__)
-CSV_FILE = 'network_data.csv'
+JSON_FILE = 'network_data.json'
 
-# Create CSV file if not exists or is empty
-def create_csv_file():
+# Function to create JSON file if not exists
+def create_json_file():
     try:
-        with open(CSV_FILE, 'r') as file:
-            if len(file.read().strip()) == 0:
-                with open(CSV_FILE, 'a', newline='') as new_file:
-                    writer = csv.writer(new_file)
-                    writer.writerow(['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet'])
+        with open(JSON_FILE, 'r') as file:
+            json_data = json.load(file)
     except FileNotFoundError:
-        with open(CSV_FILE, 'a', newline='') as new_file:
-            writer = csv.writer(new_file)
-            writer.writerow(['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet'])
+        with open(JSON_FILE, 'w') as new_file:
+            json.dump([], new_file)
 
-# Function to read devices from CSV file
-def read_devices_from_csv():
-    devices = []
-    with open(CSV_FILE, 'r', newline='') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            devices.append(row)
+# Function to read devices from JSON file
+def read_devices_from_json():
+    with open(JSON_FILE, 'r') as file:
+        devices = json.load(file)
     return devices
 
-# Function to write devices to CSV file
-def write_devices_to_csv(devices):
-    with open(CSV_FILE, 'w', newline='') as file:
-        fieldnames = ['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet']
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        for device in devices:
-            writer.writerow(device)
-
-# Convert UTC to UTC+8
-def convert_utc_to_utc_plus_8(utc_time):
-    utc_plus_8_time = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=8)
-    return utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')
+# Function to write devices to JSON file
+def write_devices_to_json(devices):
+    with open(JSON_FILE, 'w') as file:
+        json.dump(devices, file, indent=4)
 
 # Create a new device
 @app.route('/api/mac', methods=['POST'])
 def add_device():
     new_device = request.json
-    new_device['date'] = request.json.get('date', convert_utc_to_utc_plus_8(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
-    devices = read_devices_from_csv()
+    new_device['date'] = request.json.get('date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    devices = read_devices_from_json()
     devices.append(new_device)
-    write_devices_to_csv(devices)
+    write_devices_to_json(devices)
     return jsonify({"message": "Device added successfully"}), 201
 
 # Get all devices
 @app.route('/api/mac', methods=['GET'])
 def get_devices():
-    devices = read_devices_from_csv()
+    devices = read_devices_from_json()
     return jsonify(devices)
 
-# Get a single device by row index
+# Get a single device by index
 @app.route('/api/mac/<int:index>', methods=['GET'])
 def get_device(index):
-    devices = read_devices_from_csv()
+    devices = read_devices_from_json()
     if 0 <= index < len(devices):
         return jsonify(devices[index])
     return jsonify({"message": "Device not found"}), 404
 
-# Update a device by row index
+# Update a device by index
 @app.route('/api/mac/<int:index>', methods=['PUT'])
 def update_device(index):
     updated_device = request.json
-    devices = read_devices_from_csv()
+    devices = read_devices_from_json()
     if 0 <= index < len(devices):
-        devices[index].update(updated_device)
-        write_devices_to_csv(devices)
+        devices[index] = updated_device
+        write_devices_to_json(devices)
         return jsonify({"message": "Device updated successfully"})
     return jsonify({"message": "Device not found"}), 404
 
-# Delete a device by row index
+# Delete a device by index
 @app.route('/api/mac/<int:index>', methods=['DELETE'])
 def delete_device(index):
-    devices = read_devices_from_csv()
+    devices = read_devices_from_json()
     if 0 <= index < len(devices):
         del devices[index]
-        write_devices_to_csv(devices)
+        write_devices_to_json(devices)
         return jsonify({"message": "Device deleted successfully"})
     return jsonify({"message": "Device not found"}), 404
 
 if __name__ == '__main__':
-    create_csv_file()
+    create_json_file()
     app.run(host='0.0.0.0', port=5000, debug=True)
 
