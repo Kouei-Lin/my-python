@@ -18,9 +18,9 @@ function Log-MACAddress {
         # Check if MAC address has appeared before
         $existingMacAddresses = (Invoke-RestMethod -Uri $apiUrl).mac_address
         if ($existingMacAddresses -contains $macAddress) {
-            $appearBefore = "No"
-        } else {
             $appearBefore = "Yes"
+        } else {
+            $appearBefore = "No"
         }
 
         # Perform ping test
