@@ -58,6 +58,49 @@ def get_devices():
 
     return jsonify(devices_list)
 
+# Get a single device by ID
+@app.route('/api/mac/<int:id>', methods=['GET'])
+def get_device(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM devices WHERE id = ?', (id,))
+    device = cursor.fetchone()
+    conn.close()
+
+    if device:
+        device_dict = dict(device)
+        return jsonify(device_dict)
+    else:
+        return jsonify({"message": "Device not found"}), 404
+
+# Update a device by ID
+@app.route('/api/mac/<int:id>', methods=['PUT'])
+def update_device(id):
+    updated_device = request.json
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        UPDATE devices
+        SET name = ?, mac_address = ?, appear_before = ?, interface = ?, internet = ?
+        WHERE id = ?
+    ''', (updated_device['name'], updated_device['mac_address'], updated_device['appear_before'], updated_device['interface'], updated_device['internet'], id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Device updated successfully"})
+
+# Delete a device by ID
+@app.route('/api/mac/<int:id>', methods=['DELETE'])
+def delete_device(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM devices WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Device deleted successfully"})
+
 if __name__ == '__main__':
     create_table()
     app.run(host='0.0.0.0', port=5000, debug=True)
