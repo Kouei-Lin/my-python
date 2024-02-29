@@ -1,15 +1,15 @@
-# GET all
+# GET all devices
 curl http://localhost:5000/api/mac
 
-# GET with id
+# GET a device by index (e.g., index 0)
 curl http://localhost:5000/api/mac/0
 
-# POST
-curl -X POST -H "Content-Type: application/json" -d '{"name":"NewDevice","mac_address":"00:11:22:33:44:55","appear_before":"No","interface":"eth0","internet":"Success"}' http://localhost:5000/api/mac
+# POST a new device
+curl -X POST -H "Content-Type: application/json" -d '{"name":"NewDevice","mac_address":"00:11:22:33:44:55","appear_before":"No","interface":"eth0","internet":"Success","date":"2024-03-01 12:00:00"}' http://localhost:5000/api/mac
 
-# PULL
-curl -X PUT -H "Content-Type: application/json" -d '{"name":"UpdatedDevice","mac_address":"00:11:22:33:44:55","appear_before":"Yes","interface":"eth1","internet":"Success"}' http://localhost:5000/api/mac/0
+# PUT (update) a device by index (e.g., index 0)
+curl -X PUT -H "Content-Type: application/json" -d '{"name":"UpdatedDevice","mac_address":"00:11:22:33:44:55","appear_before":"Yes","interface":"eth1","internet":"Success","date":"2024-03-01 13:00:00"}' http://localhost:5000/api/mac/0
 
-# DELETE
+# DELETE a device by index (e.g., index 0)
 curl -X DELETE http://localhost:5000/api/mac/0
 
