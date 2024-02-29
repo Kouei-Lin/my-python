@@ -16,8 +16,11 @@ def create_json_file():
 
 # Function to read devices from JSON file
 def read_devices_from_json():
-    with open(JSON_FILE, 'r') as file:
-        devices = json.load(file)
+    try:
+        with open(JSON_FILE, 'r') as file:
+            devices = json.load(file)
+    except FileNotFoundError:
+        devices = []
     return devices
 
 # Function to write devices to JSON file
