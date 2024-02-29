@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import csv
+from datetime import datetime
 
 app = Flask(__name__)
 CSV_FILE = 'network_data.csv'
@@ -15,7 +16,7 @@ def create_csv_file():
         # If the file doesn't exist, create it and add the header row
         with open(CSV_FILE, 'a', newline='') as new_file:
             writer = csv.writer(new_file)
-            writer.writerow(['name', 'mac_address', 'appear_before', 'interface', 'internet'])
+            writer.writerow(['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet'])
 
 # Function to read devices from CSV file
 def read_devices_from_csv():
@@ -29,7 +30,7 @@ def read_devices_from_csv():
 # Function to write devices to CSV file
 def write_devices_to_csv(devices):
     with open(CSV_FILE, 'w', newline='') as file:
-        fieldnames = ['name', 'mac_address', 'appear_before', 'interface', 'internet']
+        fieldnames = ['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for device in devices:
@@ -39,6 +40,8 @@ def write_devices_to_csv(devices):
 @app.route('/api/mac', methods=['POST'])
 def add_device():
     new_device = request.json
+    # Add date field to the beginning of the device data
+    new_device['date'] = request.json.get('date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     devices = read_devices_from_csv()
     devices.append(new_device)
     write_devices_to_csv(devices)
