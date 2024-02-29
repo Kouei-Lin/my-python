@@ -20,8 +20,6 @@ def read_devices_from_json():
         with open(JSON_FILE, 'r') as file:
             devices = json.load(file)
     except FileNotFoundError:
-        # If the file is not found, print a message and return an empty list
-        print("JSON file not found:", JSON_FILE)
         devices = []
     return devices
 
