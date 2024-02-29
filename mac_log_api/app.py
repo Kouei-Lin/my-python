@@ -42,14 +42,17 @@ def add_device():
 @app.route('/api/mac', methods=['GET'])
 def get_devices():
     devices = read_devices_from_json()
-    return jsonify(devices)
+    # Add index to each device
+    devices_with_index = [{'index': idx, **device} for idx, device in enumerate(devices)]
+    return jsonify(devices_with_index)
 
 # Get a single device by index
 @app.route('/api/mac/<int:index>', methods=['GET'])
 def get_device(index):
     devices = read_devices_from_json()
     if 0 <= index < len(devices):
-        return jsonify(devices[index])
+        device_with_index = {'index': index, **devices[index]}
+        return jsonify(device_with_index)
     return jsonify({"message": "Device not found"}), 404
 
 # Update a device by index
