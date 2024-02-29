@@ -52,13 +52,8 @@ def get_devices():
 
     devices_list = []
     for device in devices:
-        device_dict = {
-            'name': device['name'],
-            'mac_address': device['mac_address'],
-            'appear_before': device['appear_before'],
-            'interface': device['interface'],
-            'internet': device['internet']
-        }
+        # Convert Row object to dictionary
+        device_dict = dict(device)
         devices_list.append(device_dict)
 
     return jsonify(devices_list)
