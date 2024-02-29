@@ -3,3 +3,13 @@ curl http://localhost:5000/api/mac
 
 # GET with id
 curl http://localhost:5000/api/mac/1
+
+# POST
+curl -X POST -H "Content-Type: application/json" -d '{"name":"NewDevice","mac_address":"00:11:22:33:44:55","appear_before":"No","interface":"eth0","internet":"Success"}' http://localhost:5000/api/mac
+
+# PULL
+curl -X PUT -H "Content-Type: application/json" -d '{"name":"UpdatedDevice","mac_address":"00:11:22:33:44:55","appear_before":"Yes","interface":"eth1","internet":"Success"}' http://localhost:5000/api/mac/0
+
+# DELETE
+curl -X DELETE http://localhost:5000/api/mac/0
+
