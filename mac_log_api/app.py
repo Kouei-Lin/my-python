@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CSV_FILE = 'network_data.csv'
@@ -36,11 +36,16 @@ def write_devices_to_csv(devices):
         for device in devices:
             writer.writerow(device)
 
+# Convert UTC to UTC+8
+def convert_utc_to_utc_plus_8(utc_time):
+    utc_plus_8_time = datetime.strptime(utc_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=8)
+    return utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')
+
 # Create a new device
 @app.route('/api/mac', methods=['POST'])
 def add_device():
     new_device = request.json
-    new_device['date'] = request.json.get('date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    new_device['date'] = request.json.get('date', convert_utc_to_utc_plus_8(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
     devices = read_devices_from_csv()
     devices.append(new_device)
     write_devices_to_csv(devices)
