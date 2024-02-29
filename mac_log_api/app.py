@@ -31,16 +31,12 @@ def write_devices_to_json(devices):
 # Create a new device
 @app.route('/api/mac', methods=['POST'])
 def add_device():
-    new_device_list = request.json  # Assuming JSON data is sent as a list
-    if isinstance(new_device_list, list) and len(new_device_list) > 0:
-        new_device = new_device_list[0]  # Extract the first element from the list
-        new_device['date'] = new_device.get('date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        devices = read_devices_from_json()
-        devices.append(new_device)
-        write_devices_to_json(devices)
-        return jsonify({"message": "Device added successfully"}), 201
-    else:
-        return jsonify({"error": "Invalid JSON data format"}), 400
+    new_device = request.json
+    new_device['date'] = request.json.get('date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    devices = read_devices_from_json()
+    devices.append(new_device)
+    write_devices_to_json(devices)
+    return jsonify({"message": "Device added successfully"}), 201
 
 # Get all devices
 @app.route('/api/mac', methods=['GET'])
