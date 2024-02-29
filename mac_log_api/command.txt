@@ -1,15 +1,15 @@
 # GET all
-curl http://API_URL:5000/api/mac
+curl http://localhost:5000/api/mac
 
 # POST
-curl -X POST -H "Content-Type: application/json" -d '{"name":"John","mac_address":"00:11:22:33:44:55","interface":"eth0","internet":"Success"}' http://API_URL:5000/api/mac
+curl -X POST -H "Content-Type: application/json" -d '{"name":"John","mac_address":"00:11:22:33:44:55","interface":"eth0","internet":"Success"}' http://localhost:5000/api/mac
 
 # GET with id
-curl http://API_URL:5000/api/mac/1
+curl http://localhost:5000/api/mac/1
 
 # PUT
-curl -X PUT -H "Content-Type: application/json" -d '{"name":"Jane","mac_address":"00:11:22:33:44:55","interface":"eth1","internet":"Failed"}' http://API_URL:5000/api/mac/1
+curl -X PUT -H "Content-Type: application/json" -d '{"name":"Jane","mac_address":"00:11:22:33:44:55","interface":"eth1","internet":"Failed"}' http://localhost:5000/api/mac/1
 
 # DELETE
-curl -X DELETE http://API_URL:5000/api/mac/1
+curl -X DELETE http://localhost:5000/api/mac/1
 
