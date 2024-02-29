@@ -6,9 +6,18 @@ CSV_FILE = 'network_data.csv'
 
 # Create CSV file if not exists
 def create_csv_file():
-    with open(CSV_FILE, 'a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['name', 'mac_address', 'appear_before', 'interface', 'internet'])
+    try:
+        with open(CSV_FILE, 'r') as file:
+            # Check if the file is empty
+            if len(file.read().strip()) == 0:
+                with open(CSV_FILE, 'a', newline='') as new_file:
+                    writer = csv.writer(new_file)
+                    writer.writerow(['name', 'mac_address', 'appear_before', 'interface', 'internet'])
+    except FileNotFoundError:
+        # If the file doesn't exist, create it and add the header row
+        with open(CSV_FILE, 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['name', 'mac_address', 'appear_before', 'interface', 'internet'])
 
 # Function to read devices from CSV file
 def read_devices_from_csv():
