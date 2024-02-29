@@ -5,36 +5,21 @@ from datetime import datetime
 app = Flask(__name__)
 CSV_FILE = 'network_data.csv'
 
-# Function to check if CSV file exists
-def csv_file_exists():
-    try:
-        with open(CSV_FILE, 'r') as file:
-            return True
-    except FileNotFoundError:
-        return False
-
-# Create CSV file if not exists
+# Create CSV file if not exists or is empty
 def create_csv_file():
-    if not csv_file_exists():
-        print("CSV file does not exist. Please add data first.")
-        return False
     try:
         with open(CSV_FILE, 'r') as file:
-            # Check if the file is empty
             if len(file.read().strip()) == 0:
-                return True
+                with open(CSV_FILE, 'a', newline='') as new_file:
+                    writer = csv.writer(new_file)
+                    writer.writerow(['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet'])
     except FileNotFoundError:
-        # If the file doesn't exist, create it and add the header row
         with open(CSV_FILE, 'a', newline='') as new_file:
             writer = csv.writer(new_file)
             writer.writerow(['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet'])
-        return True
 
 # Function to read devices from CSV file
 def read_devices_from_csv():
-    if not csv_file_exists():
-        print("CSV file does not exist. Please add data first.")
-        return []
     devices = []
     with open(CSV_FILE, 'r', newline='') as file:
         reader = csv.DictReader(file)
@@ -44,24 +29,17 @@ def read_devices_from_csv():
 
 # Function to write devices to CSV file
 def write_devices_to_csv(devices):
-    if not csv_file_exists():
-        print("CSV file does not exist. Please add data first.")
-        return False
     with open(CSV_FILE, 'w', newline='') as file:
         fieldnames = ['date', 'name', 'mac_address', 'appear_before', 'interface', 'internet']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for device in devices:
             writer.writerow(device)
-    return True
 
 # Create a new device
 @app.route('/api/mac', methods=['POST'])
 def add_device():
-    if not create_csv_file():
-        return jsonify({"message": "Failed to add device. CSV file does not exist. Please add data first."}), 400
     new_device = request.json
-    # Add date field to the beginning of the device data
     new_device['date'] = request.json.get('date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     devices = read_devices_from_csv()
     devices.append(new_device)
@@ -71,29 +49,23 @@ def add_device():
 # Get all devices
 @app.route('/api/mac', methods=['GET'])
 def get_devices():
-    if not create_csv_file():
-        return jsonify({"message": "Failed to get devices. CSV file does not exist. Please add data first."}), 400
     devices = read_devices_from_csv()
     return jsonify(devices)
 
 # Get a single device by row index
 @app.route('/api/mac/<int:index>', methods=['GET'])
 def get_device(index):
-    if not create_csv_file():
-        return jsonify({"message": "Failed to get device. CSV file does not exist. Please add data first."}), 400
     devices = read_devices_from_csv()
-    if index >= 0 and index < len(devices):
+    if 0 <= index < len(devices):
         return jsonify(devices[index])
     return jsonify({"message": "Device not found"}), 404
 
 # Update a device by row index
 @app.route('/api/mac/<int:index>', methods=['PUT'])
 def update_device(index):
-    if not create_csv_file():
-        return jsonify({"message": "Failed to update device. CSV file does not exist. Please add data first."}), 400
     updated_device = request.json
     devices = read_devices_from_csv()
-    if index >= 0 and index < len(devices):
+    if 0 <= index < len(devices):
         devices[index].update(updated_device)
         write_devices_to_csv(devices)
         return jsonify({"message": "Device updated successfully"})
@@ -102,10 +74,8 @@ def update_device(index):
 # Delete a device by row index
 @app.route('/api/mac/<int:index>', methods=['DELETE'])
 def delete_device(index):
-    if not create_csv_file():
-        return jsonify({"message": "Failed to delete device. CSV file does not exist. Please add data first."}), 400
     devices = read_devices_from_csv()
-    if index >= 0 and index < len(devices):
+    if 0 <= index < len(devices):
         del devices[index]
         write_devices_to_csv(devices)
         return jsonify({"message": "Device deleted successfully"})
