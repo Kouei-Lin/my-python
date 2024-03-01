@@ -1,9 +1,15 @@
 from flask import Flask, request, jsonify
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+from apprise import Apprise
 
 app = Flask(__name__)
 JSON_FILE = 'network_data.json'
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Function to create JSON file if not exists
 def create_json_file():
@@ -40,6 +46,10 @@ def add_device():
 
     devices.append(new_device)
     write_devices_to_json(devices)
+
+    # Send notification using Apprise
+    send_notification(f"New device added: {new_device}")
+
     return jsonify({"message": "Device added successfully"}), 201
 
 # Get all devices
@@ -64,6 +74,10 @@ def update_device(index):
     if 0 <= index < len(devices):
         devices[index] = updated_device
         write_devices_to_json(devices)
+
+        # Send notification using Apprise
+        send_notification(f"Device updated: {updated_device}")
+
         return jsonify({"message": "Device updated successfully"})
     return jsonify({"message": "Device not found"}), 404
 
@@ -74,8 +88,22 @@ def delete_device(index):
     if 0 <= index < len(devices):
         del devices[index]
         write_devices_to_json(devices)
+
+        # Send notification using Apprise
+        send_notification("Device deleted")
+
         return jsonify({"message": "Device deleted successfully"})
     return jsonify({"message": "Device not found"}), 404
+
+def send_notification(message):
+    # Get the notification URL from environment variable
+    notification_url = os.getenv("NOTIFICATION_URL")
+    if notification_url:
+        apprise = Apprise()
+        apprise.add(notification_url)
+        apprise.notify(body=message)
+    else:
+        print("Notification URL not found. Notification not sent.")
 
 if __name__ == '__main__':
     create_json_file()
