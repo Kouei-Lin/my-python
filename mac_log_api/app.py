@@ -4,6 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 from apprise import Apprise
+import pytz
 
 app = Flask(__name__)
 JSON_FILE = 'network_data.json'
@@ -38,7 +39,12 @@ def write_devices_to_json(devices):
 @app.route('/api/mac', methods=['POST'])
 def add_device():
     new_device = request.json
-    new_device['date'] = request.json.get('date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    
+    # Convert current datetime to UTC+8
+    utc_8 = timezone('Asia/Taipe')
+    date_utc_8 = datetime.now(pytz.utc).astimezone(utc_8)
+    new_device['date'] = date_utc_8.strftime('%Y-%m-%d %H:%M:%S')
+
     devices = read_devices_from_json()
 
     # Add index to the new device
