@@ -40,10 +40,10 @@ def write_devices_to_json(devices):
 def add_device():
     new_device = request.json
     
-    # Convert current datetime to UTC+8
-    utc_8 = timezone('Asia/Taipei')
-    date_utc_8 = datetime.now(pytz.utc).astimezone(utc_8)
-    new_device['date'] = date_utc_8.strftime('%Y-%m-%d %H:%M:%S')
+    # Convert current datetime to Taipei timezone (UTC+8)
+    taipei_timezone = timezone('Asia/Taipei')
+    date_taipei = datetime.now(taipei_timezone)
+    new_device['date'] = date_taipei.strftime('%Y-%m-%d %H:%M:%S')
 
     devices = read_devices_from_json()
 
