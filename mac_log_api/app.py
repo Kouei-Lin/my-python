@@ -4,7 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 from apprise import Apprise
-import pytz
+from pytz import timezone
 
 app = Flask(__name__)
 JSON_FILE = 'network_data.json'
