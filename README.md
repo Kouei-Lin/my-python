@@ -27,3 +27,25 @@
 
 ## Client 跑指令
 複製貼上`command.txt`中的範例指令，`IP`改成伺服器，執行。
+
+
+## Systemd排程
+`/etc/systmed/system`，建立`xxx.service`。
+
+```
+[Unit]
+Description=My Python App Service
+After=network.target
+
+[Service]
+Type=simple
+User=your_username
+WorkingDirectory=/path/to/your/folder
+ExecStart=/usr/bin/python3 /path/to/your/folder/app.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+`sudo systemd enable xxx.service`
