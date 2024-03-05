@@ -48,4 +48,6 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
+`sudo systemctl daemon-reload`
+
 `sudo systemctl enable xxx.service`
