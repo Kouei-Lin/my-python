@@ -48,4 +48,4 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-`sudo systemd enable xxx.service`
+`sudo systemctl enable xxx.service`
