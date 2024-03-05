@@ -2,3 +2,5 @@ Flask
 datetime
 pytz
 gunicorn
+apprise
+python-dotenv
