@@ -42,7 +42,7 @@ Type=simple
 User=your_username
 WorkingDirectory=/path/to/your/folder
 ExecStart=/usr/bin/python3 /path/to/your/folder/app.py
-Restart=on-failure
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
