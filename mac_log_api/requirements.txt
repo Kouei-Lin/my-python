@@ -4,4 +4,4 @@ pytz
 gunicorn
 apprise
 python-dotenv
-sqlite3
+pysqlite3
