@@ -51,7 +51,7 @@ def add_device():
 
     return jsonify({"message": "Device added successfully"}), 201
 
-# Get all devices
+# Get all devices with column names
 @app.route('/api/mac', methods=['GET'])
 def get_devices():
     conn = sqlite3.connect(DATABASE)
@@ -59,9 +59,16 @@ def get_devices():
     cursor.execute("SELECT * FROM devices")
     devices = cursor.fetchall()
     conn.close()
-    return jsonify(devices)
 
-# Get a single device by ID
+    # Extract column names from the cursor description
+    columns = [col[0] for col in cursor.description]
+
+    # Combine column names with device values into dictionaries
+    devices_with_keys = [{columns[i]: device[i] for i in range(len(columns))} for device in devices]
+
+    return jsonify(devices_with_keys)
+
+# Get a single device by ID with column names
 @app.route('/api/mac/<int:index>', methods=['GET'])
 def get_device(index):
     conn = sqlite3.connect(DATABASE)
@@ -69,8 +76,15 @@ def get_device(index):
     cursor.execute("SELECT * FROM devices WHERE id=?", (index,))
     device = cursor.fetchone()
     conn.close()
+
     if device:
-        return jsonify(device)
+        # Extract column names from the cursor description
+        columns = [col[0] for col in cursor.description]
+
+        # Combine column names with device values into a dictionary
+        device_with_keys = {columns[i]: device[i] for i in range(len(columns))}
+
+        return jsonify(device_with_keys)
     return jsonify({"message": "Device not found"}), 404
 
 # Update a device by ID
