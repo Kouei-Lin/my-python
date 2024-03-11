@@ -1,0 +1,7 @@
+Flask
+datetime
+pytz
+gunicorn
+apprise
+python-dotenv
+pysqlite3
