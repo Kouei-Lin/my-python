@@ -5,6 +5,9 @@ function Post-DiskUsage {
     # Get disk usage information for all drives
     $diskUsage = Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, VolumeName, @{Name="Size(GB)"; Expression={[math]::Round($_.Size / 1GB, 2)}}, @{Name="FreeSpace(GB)"; Expression={[math]::Round($_.FreeSpace / 1GB, 2)}}, @{Name="UsedSpace(GB)"; Expression={[math]::Round(($_.Size - $_.FreeSpace) / 1GB, 2)}}
 
+    # Get local IP address
+    $ipAddress = (Test-Connection -ComputerName $env:COMPUTERNAME -Count 1).IPV4Address.IPAddressToString
+
     # Define API endpoint
     $apiUrl = "http://localhost:5000/api/disk"
 
@@ -16,6 +19,7 @@ function Post-DiskUsage {
             "size" = $disk.'Size(GB)'
             "free_space" = $disk.'FreeSpace(GB)'
             "used_space" = $disk.'UsedSpace(GB)'
+            "ip" = $ipAddress
         }
 
         # Convert data to JSON

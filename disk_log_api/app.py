@@ -24,7 +24,8 @@ def create_database():
                         volume_name TEXT NOT NULL,
                         size INTEGER NOT NULL,
                         free_space INTEGER NOT NULL,
-                        used_space INTEGER NOT NULL
+                        used_space INTEGER NOT NULL,
+                        ip TEXT NOT NULL
                     )''')
     conn.commit()
     conn.close()
@@ -39,10 +40,14 @@ def add_disk():
     date_taipei = datetime.now(taipei_timezone)
     new_disk['date'] = date_taipei.strftime('%Y-%m-%d %H:%M:%S')
 
+    # Extract the IP address from the request headers
+    ip_address = request.remote_addr
+    new_disk['ip'] = ip_address
+
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('''INSERT INTO disks (date, device_id, volume_name, size, free_space, used_space)
-                      VALUES (?, ?, ?, ?, ?, ?)''', (new_disk['date'], new_disk['device_id'], new_disk['volume_name'], new_disk['size'], new_disk['free_space'], new_disk['used_space']))
+    cursor.execute('''INSERT INTO disks (date, device_id, volume_name, size, free_space, used_space, ip)
+                      VALUES (?, ?, ?, ?, ?, ?, ?)''', (new_disk['date'], new_disk['device_id'], new_disk['volume_name'], new_disk['size'], new_disk['free_space'], new_disk['used_space'], new_disk['ip']))
     conn.commit()
     conn.close()
 
@@ -96,8 +101,8 @@ def update_disk(index):
     cursor.execute("SELECT * FROM disks WHERE id=?", (index,))
     disk = cursor.fetchone()
     if disk:
-        cursor.execute('''UPDATE disks SET date=?, device_id=?, volume_name=?, size=?, free_space=?, used_space=? WHERE id=?''',
-                       (updated_disk['date'], updated_disk['device_id'], updated_disk['volume_name'], updated_disk['size'], updated_disk['free_space'], updated_disk['used_space'], index))
+        cursor.execute('''UPDATE disks SET date=?, device_id=?, volume_name=?, size=?, free_space=?, used_space=?, ip=? WHERE id=?''',
+                       (updated_disk['date'], updated_disk['device_id'], updated_disk['volume_name'], updated_disk['size'], updated_disk['free_space'], updated_disk['used_space'], updated_disk['ip'], index))
         conn.commit()
         conn.close()
 
