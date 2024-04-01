@@ -21,7 +21,7 @@ def detect_good_status(image_path):
     _, binary_roi = cv2.threshold(gray_roi, 200, 255, cv2.THRESH_BINARY)
     
     # Perform OCR on the ROI
-    text = pytesseract.image_to_string(binary_roi, lang='chi_sim')
+    text = pytesseract.image_to_string(binary_roi, lang='chi_tra')
     
     # Check if the "良好" text is present in the OCR result
     if "良好" in text:
