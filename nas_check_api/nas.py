@@ -16,7 +16,7 @@ def detect_keyword(image_path, keyword):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Apply OCR on the grayscale image
-    text = pytesseract.image_to_string(gray_image, lang='eng')
+    text = pytesseract.image_to_string(gray_image, lang='chi-tra')
 
     # Check if the keyword is present in the OCR result
     if keyword in text:
