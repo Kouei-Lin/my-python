@@ -1,4 +1,6 @@
-opencv-python
-pytesseract
-# sudo apt install tesseract-ocr tesseract-ocr-tra-sim
+Flask
+sqlite3
 python-dotenv
+Apprise
+pytz
+
