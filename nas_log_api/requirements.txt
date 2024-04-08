@@ -3,4 +3,5 @@ sqlite3
 python-dotenv
 Apprise
 pytz
+openpyxl
 
