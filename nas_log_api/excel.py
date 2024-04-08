@@ -2,39 +2,41 @@ import requests
 import pandas as pd
 import openpyxl
 
-# Make a GET request to the Flask API endpoint
-api_url = 'http://xxx.xxx.xxx.xxx:port/api/nas'  # Replace with your actual API endpoint
-response = requests.get(api_url)
+# Define API endpoints and corresponding sheet names
+api_endpoints = {
+    'NAS': 'http://xxx.xxx.xxx.xxx:port/api/nas',
+    'API2': 'http://xxx.xxx.xxx.xxx:port/api/api2',
+    'API3': 'http://xxx.xxx.xxx.xxx:port/api/api3'
+}
 
-# Check if the request was successful
-if response.status_code == 200:
-    # Parse JSON response
-    data = response.json()
+# Example path where the Excel file is located
+excel_file_path = 'path/to/your/excel/file.xlsx'
 
-    # Convert data to DataFrame
-    df = pd.DataFrame(data)
-
-    # Example path where the Excel file is located
-    excel_file_path = 'path/to/your/excel/file.xlsx'  # Update this with your actual file path
-    
-    # Check if sheet exists in the Excel file
+# Function to fetch data from API and save to Excel sheet
+def fetch_and_save_to_sheet(api_name, api_url, excel_file_path):
     try:
-        with pd.ExcelFile(excel_file_path) as xls:
-            if 'NAS' in xls.sheet_names:
-                # Open the Excel file
-                wb = openpyxl.load_workbook(excel_file_path)
-                # Delete the existing sheet
-                wb.remove(wb['NAS'])
-                # Save the changes
-                wb.save(excel_file_path)
-    except FileNotFoundError:
-        pass  # Continue if the file doesn't exist or other errors occur
-    
-    # Write DataFrame to Excel file, creating a new sheet
-    with pd.ExcelWriter(excel_file_path, mode='a', engine='openpyxl') as writer:
-        df.to_excel(writer, sheet_name='NAS', index=False)
+        # Make a GET request to the API endpoint
+        response = requests.get(api_url)
         
-    print("Data successfully overwritten in Excel file:", excel_file_path)
-else:
-    print("Failed to fetch data from the API.")
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Parse JSON response
+            data = response.json()
 
+            # Convert data to DataFrame
+            df = pd.DataFrame(data)
+
+            # Check if sheet exists in the Excel file
+            with pd.ExcelWriter(excel_file_path, mode='a', if_sheet_exists="replace", engine='openpyxl') as writer:
+                # Write DataFrame to Excel file, creating a new sheet
+                df.to_excel(writer, sheet_name=api_name, index=False)
+            
+            print(f"Data from {api_name} API successfully saved to Excel sheet.")
+        else:
+            print(f"Failed to fetch data from {api_name} API.")
+    except Exception as e:
+        print(f"An error occurred while fetching data from {api_name} API:", e)
+
+# Iterate through API endpoints and fetch data for each
+for api_name, api_url in api_endpoints.items():
+    fetch_and_save_to_sheet(api_name, api_url, excel_file_path)
