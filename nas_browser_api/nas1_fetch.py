@@ -37,47 +37,47 @@ class SynType1:
 
             # Print the URL for debugging purposes
             print("Navigating to URL:", url)
-            
+
             # Navigate to the specified URL
             self.driver.get(url)
-            
+
             # Wait for the login page to load
             wait = WebDriverWait(self.driver, 10)
-            
+
             # Find the username input field and input the username
             username_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_username')))
             username_input.send_keys(username)
-            
+
             # Find the password input field and input the password
             password_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_passwd')))
             password_input.send_keys(password)
-            
+
             # Find the login button and click it
             login_button = wait.until(EC.element_to_be_clickable((By.ID, 'login-btn')))
             login_button.click()
-            
+
             # Wait for 30 seconds after logging in
             time.sleep(30)
-            
+
             # Wait for the dashboard page to load
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
-            
+
             # Find all div elements containing CPU and RAM information by class name
             cpu_ram_elements = self.driver.find_elements(By.CLASS_NAME, 'percentage-cmp-value')
-            
+
             # Get the text of all elements containing CPU and RAM information
             cpu_values = cpu_ram_elements[0].text
             ram_values = cpu_ram_elements[1].text
-            
+
             # Print CPU and RAM values
             print("CPU:", cpu_values)
             print("RAM:", ram_values)
-            
+
             # Find the div element with class 'syno-sysinfo-system-health-content-header-normal' and extract its text
             status_div = self.driver.find_element(By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')
             status_text = status_div.text
             print("Status:", status_text)
-            
+
             # Append the result to the list
             results.append({
                 "url": url,
@@ -97,4 +97,3 @@ with open('syn_type1_results.json', 'w') as f:
     json.dump(data, f, indent=4)
 
 print("Results have been saved to syn_type1_results.json")
-
