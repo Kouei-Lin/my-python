@@ -1,0 +1,2 @@
+Driver: https://github.com/mozilla/geckodriver/releases
+Unzip, mv geckodriver /usr/local/bin, chmod +x geckodriver
