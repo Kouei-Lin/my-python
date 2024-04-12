@@ -29,7 +29,7 @@ class SynType1:
         print("Navigating to URL:", self.url)
         self.driver.get(self.url)
 
-        wait = WebDriverWait(self.driver, 10)
+        wait = WebDriverWait(self.driver, 60)
         username_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_username')))
         username_input.send_keys(self.username)
 
@@ -39,10 +39,8 @@ class SynType1:
         login_button = wait.until(EC.element_to_be_clickable((By.ID, 'login-btn')))
         login_button.click()
 
-        time.sleep(5)  # Waiting for login to complete
-
     def get_info(self):
-        wait = WebDriverWait(self.driver, 10)
+        wait = WebDriverWait(self.driver, 60)
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
         
         status_div = self.driver.find_element(By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')
@@ -51,48 +49,24 @@ class SynType1:
         return {"disk_status": status_text}
 
     def fetch_data(self):
-        results = []
-
         self.login()
         info = self.get_info()
-        results.append({"url": self.url, **info})
-
-        # Write to JSON file
-        self.write_to_json(results)
+        data = {"url": self.url, **info}
 
         # Notify API
-        self.notify_api(results)
+        self.notify_api(data)
 
         # Quit driver
         self.quit_driver()
 
-        return results
-
-    def write_to_json(self, data):
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        json_file = f'nas_data.json'
-        try:
-            with open(json_file, 'r') as f:
-                existing_data = json.load(f)
-        except FileNotFoundError:
-            existing_data = []
-        
-        existing_data.extend(data)
-
-        with open(json_file, 'w') as f:
-            json.dump(existing_data, f, indent=4)
-
-        print(f"Data for SynType1 has been appended to {json_file}.")
-
     def notify_api(self, data):
         api_endpoint = os.getenv('API_ENDPOINT')
         if api_endpoint:
-            for item in data:
-                response = requests.post(api_endpoint, json=item)
-                if response.status_code == 201:
-                    print(f"Data sent successfully for URL: {item['url']}")
-                else:
-                    print(f"Failed to send data for URL: {item['url']}. Status code: {response.status_code}")
+            response = requests.post(api_endpoint, json=data)
+            if response.status_code == 201:
+                print(f"Data sent successfully for URL: {data['url']}")
+            else:
+                print(f"Failed to send data for URL: {data['url']}. Status code: {response.status_code}")
         else:
             print("API_ENDPOINT not found in the environment variables.")
 
@@ -104,8 +78,25 @@ class SynType2(SynType1):
     def __init__(self, user):
         super().__init__(user)
 
+    def login(self):
+        print("Navigating to URL:", self.url)
+        self.driver.get(self.url)
+
+        wait = WebDriverWait(self.driver, 60)
+        username_input = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[syno-id="username"]')))
+        username_input.send_keys(self.username)
+
+        advance_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[syno-id="account-panel-next-btn"]')))
+        advance_button.click()
+
+        password_input = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[syno-id="password"]')))
+        password_input.send_keys(self.password)
+
+        login_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[syno-id="password-panel-next-btn"]')))
+        login_button.click()
+
     def get_info(self):
-        wait = WebDriverWait(self.driver, 10)
+        wait = WebDriverWait(self.driver, 60)
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
         
         status_div = self.driver.find_element(By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')
