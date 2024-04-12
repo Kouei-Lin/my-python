@@ -22,9 +22,7 @@ def create_database():
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TEXT NOT NULL,
                         url TEXT NOT NULL,
-                        disk_status TEXT NOT NULL,
-                        cpu TEXT NOT NULL,
-                        ram TEXT NOT NULL
+                        disk_status TEXT NOT NULL
                     )''')
     conn.commit()
     conn.close()
@@ -41,90 +39,45 @@ def add_nas_data():
 
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('''INSERT INTO nas_data (date, url, disk_status, cpu, ram)
-                      VALUES (?, ?, ?, ?, ?)''', (new_data['date'], new_data['url'], new_data['disk_status'], new_data['cpu'], new_data['ram']))
+    cursor.execute('''INSERT INTO nas_data (date, url, disk_status)
+                      VALUES (?, ?, ?)''', (new_data['date'], new_data['url'], new_data['disk_status']))
     conn.commit()
     conn.close()
 
     # Send detailed notification
-    logged_data = f"Logged data:\nDate: {new_data['date']}\nURL: {new_data['url']}\nDisk Status: {new_data['disk_status']}\nCPU: {new_data['cpu']}\nRAM: {new_data['ram']}"
+    logged_data = f"Logged data:\nDate: {new_data['date']}\nURL: {new_data['url']}\nDisk Status: {new_data['disk_status']}"
     send_notification(logged_data)
 
     return jsonify({"message": "NAS data added successfully"}), 201
 
-# Get all NAS data with column names
+# Get all NAS data with date, url, and disk status columns
 @app.route('/api/nas_browser', methods=['GET'])
 def get_nas_data():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM nas_data")
+    cursor.execute("SELECT date, url, disk_status FROM nas_data")
     data = cursor.fetchall()
     conn.close()
 
-    # Extract column names from the cursor description
-    columns = [col[0] for col in cursor.description]
-
     # Combine column names with data values into dictionaries
-    data_with_keys = [{columns[i]: row[i] for i in range(len(columns))} for row in data]
+    data_with_keys = [{"date": row[0], "url": row[1], "disk_status": row[2]} for row in data]
 
     return jsonify(data_with_keys)
 
-# Get a single NAS data entry by ID with column names
+# Get a single NAS data entry by ID with date, url, and disk status columns
 @app.route('/api/nas_browser/<int:id>', methods=['GET'])
 def get_nas_data_by_id(id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM nas_data WHERE id=?", (id,))
+    cursor.execute("SELECT date, url, disk_status FROM nas_data WHERE id=?", (id,))
     data = cursor.fetchone()
     conn.close()
 
     if data:
-        # Extract column names from the cursor description
-        columns = [col[0] for col in cursor.description]
-
         # Combine column names with data values into a dictionary
-        data_with_keys = {columns[i]: data[i] for i in range(len(columns))}
+        data_with_keys = {"date": data[0], "url": data[1], "disk_status": data[2]}
 
         return jsonify(data_with_keys)
-    return jsonify({"message": "NAS data not found"}), 404
-
-# Update a NAS data entry by ID
-@app.route('/api/nas_browser/<int:id>', methods=['PUT'])
-def update_nas_data(id):
-    updated_data = request.json
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM nas_data WHERE id=?", (id,))
-    data = cursor.fetchone()
-    if data:
-        cursor.execute('''UPDATE nas_data SET date=?, url=?, disk_status=?, cpu=?, ram=? WHERE id=?''',
-                       (updated_data['date'], updated_data['url'], updated_data['disk_status'], updated_data['cpu'], updated_data['ram'], id))
-        conn.commit()
-        conn.close()
-
-        # Send detailed notification
-        logged_data = f"Logged data updated for ID {id}:\nDate: {updated_data['date']}\nURL: {updated_data['url']}\nDisk Status: {updated_data['disk_status']}\nCPU: {updated_data['cpu']}\nRAM: {updated_data['ram']}"
-        send_notification(logged_data)
-
-        return jsonify({"message": "NAS data updated successfully"})
-    return jsonify({"message": "NAS data not found"}), 404
-
-# Delete a NAS data entry by ID
-@app.route('/api/nas_browser/<int:id>', methods=['DELETE'])
-def delete_nas_data(id):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM nas_data WHERE id=?", (id,))
-    data = cursor.fetchone()
-    if data:
-        cursor.execute("DELETE FROM nas_data WHERE id=?", (id,))
-        conn.commit()
-        conn.close()
-
-        # Send notification using Apprise
-        send_notification("NAS data deleted")
-
-        return jsonify({"message": "NAS data deleted successfully"})
     return jsonify({"message": "NAS data not found"}), 404
 
 def send_notification(message):

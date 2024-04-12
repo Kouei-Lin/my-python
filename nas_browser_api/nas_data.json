@@ -1,0 +1,26 @@
+[
+    {
+        "url": "http://192.168.6.231",
+        "disk_status": "Good",
+        "cpu": "62%",
+        "ram": "37%"
+    },
+    {
+        "url": "http://192.168.88.230",
+        "disk_status": "Healthy",
+        "cpu": "0%",
+        "ram": "0%"
+    },
+    {
+        "url": "http://192.168.88.231",
+        "disk_status": "Good",
+        "cpu": "53%",
+        "ram": "51%"
+    },
+    {
+        "url": "http://192.168.88.232",
+        "disk_status": "Healthy",
+        "cpu": "99%",
+        "ram": "63%"
+    }
+]
