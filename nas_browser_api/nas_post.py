@@ -38,7 +38,7 @@ class SynType1:
         
         return {"disk_status": status_text}
 
-    def fetch_data(self):
+    def fetch_send_data(self):
         self.login()
         info = self.get_info()
         data = {"url": self.url, **info}
@@ -116,10 +116,10 @@ syn_type2_users = [
 # Create SynType1 instances and fetch data
 for user in syn_type1_users:
     instance = SynType1(user)
-    instance.fetch_data()
+    instance.fetch_send_data()
 
 # Create SynType2 instances and fetch data
 for user in syn_type2_users:
     instance = SynType2(user)
-    instance.fetch_data()
+    instance.fetch_send_data()
 
