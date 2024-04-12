@@ -15,14 +15,6 @@ class SynType1:
         self.password = user["password"]
         self.driver = webdriver.Firefox()
 
-    def test_connection(self):
-        try:
-            self.driver.get(self.url)
-            return True
-        except Exception as e:
-            print(f"Failed to connect to {self.url}: {str(e)}")
-            return False
-
     def login(self):
         print("Navigating to URL:", self.url)
         self.driver.get(self.url)
@@ -124,12 +116,10 @@ syn_type2_users = [
 # Create SynType1 instances and fetch data
 for user in syn_type1_users:
     instance = SynType1(user)
-    if instance.test_connection():
-        instance.fetch_data()
+    instance.fetch_data()
 
 # Create SynType2 instances and fetch data
 for user in syn_type2_users:
     instance = SynType2(user)
-    if instance.test_connection():
-        instance.fetch_data()
+    instance.fetch_data()
 
