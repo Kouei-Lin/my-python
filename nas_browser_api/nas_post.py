@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor
 
 
 class SynType1:
@@ -43,11 +44,10 @@ class SynType1:
         info = self.get_info()
         data = {"url": self.url, **info}
 
-        # Notify API
-        self.notify_api(data)
-
         # Quit driver
         self.quit_driver()
+
+        return data
 
     def notify_api(self, data):
         api_endpoint = os.getenv('API_ENDPOINT')
@@ -95,6 +95,11 @@ class SynType2(SynType1):
         return {"disk_status": status_text}
 
 
+def fetch_and_send_data(syn_instance):
+    data = syn_instance.fetch_send_data()
+    syn_instance.notify_api(data)
+
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -113,13 +118,15 @@ syn_type2_users = [
     {"url": os.getenv("SYN_TYPE2_URL2"), "username": os.getenv("SYN_TYPE2_USER2"), "password": os.getenv("SYN_TYPE2_PASS2")}
 ]
 
-# Create SynType1 instances and fetch data
-for user in syn_type1_users:
-    instance = SynType1(user)
-    instance.fetch_send_data()
+# Create thread pool
+with ThreadPoolExecutor(max_workers=10) as executor:
+    # Create SynType1 instances and fetch data
+    for user in syn_type1_users:
+        instance = SynType1(user)
+        executor.submit(fetch_and_send_data, instance)
 
-# Create SynType2 instances and fetch data
-for user in syn_type2_users:
-    instance = SynType2(user)
-    instance.fetch_send_data()
+    # Create SynType2 instances and fetch data
+    for user in syn_type2_users:
+        instance = SynType2(user)
+        executor.submit(fetch_and_send_data, instance)
 
