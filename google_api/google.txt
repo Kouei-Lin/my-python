@@ -1,0 +1,10 @@
+https://console.cloud.google.com/
+
+https://console.cloud.google.com/apis/library/
+Enable GoogleDrive
+	Credentials
+		Create Credentials (Sevice account)
+		Write down the email of the Service account
+Enable GoogleSheet
+
+Google Sheet, upper right Share, add the Sevice account's email to the sheet you want to modify.
