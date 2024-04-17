@@ -4,6 +4,7 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor
 
 # Load environment variables from .env file
 load_dotenv()
@@ -35,13 +36,23 @@ def write_to_google_sheet(dataframe, sheet_name, gc, spreadsheet_id):
         worksheet = spreadsheet.worksheet(sheet_name)
     except gspread.exceptions.WorksheetNotFound:
         # If the sheet doesn't exist, create a new one
-        worksheet = spreadsheet.add_worksheet(title=sheet_name, rows=1, cols=1)
+        worksheet = spreadsheet.add_worksheet(title=sheet_name, rows=1000, cols=10)
     
     # Clear existing data
     worksheet.clear()
 
     # Update worksheet with data
     worksheet.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
+
+# Function to fetch and write data for a single API endpoint
+def process_api(api_name, api_url, gc, spreadsheet_id):
+    try:
+        print(f"Fetching data from {api_name} API...")
+        dataframe = fetch_data(api_url)
+        write_to_google_sheet(dataframe, api_name, gc, spreadsheet_id)
+        print(f"Data from {api_name} API successfully saved to Google Sheet '{api_name}'.")
+    except Exception as e:
+        print(f"An error occurred while processing {api_name} API:", e)
 
 # Main function
 def main():
@@ -50,20 +61,16 @@ def main():
     gc = authenticate_google_sheets(creds_path)
     spreadsheet_id = os.getenv('SPREADSHEET_ID')
 
-    # Iterate through API endpoints
-    for api_name, api_url in api_endpoints.items():
-        try:
-            print(f"Fetching data from {api_name} API...")
-            
-            # Fetch data from API
-            dataframe = fetch_data(api_url)
+    # Create thread pool executor
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Submit tasks for each API endpoint
+        futures = []
+        for api_name, api_url in api_endpoints.items():
+            futures.append(executor.submit(process_api, api_name, api_url, gc, spreadsheet_id))
 
-            # Write data to Google Sheet
-            write_to_google_sheet(dataframe, api_name, gc, spreadsheet_id)
-
-            print(f"Data from {api_name} API successfully saved to Google Sheet '{api_name}'.")
-        except Exception as e:
-            print(f"An error occurred while processing {api_name} API:", e)
+        # Wait for all tasks to complete
+        for future in futures:
+            future.result()  # Ensure exceptions in threads are raised
 
 if __name__ == "__main__":
     main()
