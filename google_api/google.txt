@@ -8,3 +8,5 @@ Enable GoogleDrive
 Enable GoogleSheet
 
 Google Sheet, upper right Share, add the Sevice account's email to the sheet you want to modify.
+
+cp .env_example .env, edit .env
