@@ -9,6 +9,10 @@ from concurrent.futures import ThreadPoolExecutor
 # Load environment variables from .env file
 load_dotenv()
 
+# Authenticate with Google Sheets
+creds_path = os.getenv('GOOGLE_AUTH_JSON_PATH')
+spreadsheet_id = os.getenv('SPREADSHEET_ID')
+
 # Define API endpoints
 api_endpoints = {
     'MAC': os.getenv('API_MAC'),
@@ -45,7 +49,7 @@ def write_to_google_sheet(dataframe, sheet_name, gc, spreadsheet_id):
     worksheet.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
 
 # Function to fetch and write data for a single API endpoint
-def process_api(api_name, api_url, creds_path, spreadsheet_id):
+def process_api(api_name, api_url):
     try:
         print(f"Fetching data from {api_name} API...")
         dataframe = fetch_data(api_url)
@@ -60,16 +64,12 @@ def process_api(api_name, api_url, creds_path, spreadsheet_id):
     except Exception as e:
         print(f"An error occurred while processing {api_name} API:", e)
 
-# Authenticate with Google Sheets
-creds_path = os.getenv('GOOGLE_AUTH_JSON_PATH')
-spreadsheet_id = os.getenv('SPREADSHEET_ID')
-
 # Create thread pool executor
 with ThreadPoolExecutor(max_workers=10) as executor:
     # Submit tasks for each API endpoint
     futures = []
     for api_name, api_url in api_endpoints.items():
-        futures.append(executor.submit(process_api, api_name, api_url, creds_path, spreadsheet_id))
+        futures.append(executor.submit(process_api, api_name, api_url))
 
     # Wait for all tasks to complete
     for future in futures:
