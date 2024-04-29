@@ -12,7 +12,7 @@ load_dotenv()
 imap_server_url = os.getenv('IMAP_SERVER_URL')
 imap_username = os.getenv('IMAP_USERNAME')
 imap_password = os.getenv('IMAP_PASSWORD')
-mailbox_folder = os.getenv('MAILBOX_FOLDER')
+mailbox_folder = os.getenv('REPLICATION_FOLDER')
 
 # Connect to the IMAP server without SSL/TLS encryption
 imap_server = imaplib.IMAP4(imap_server_url)
@@ -76,7 +76,7 @@ for email_uid in data[0].split():
     })
 
 # Save email content to a CSV file
-csv_filename = 'email_retry.csv'
+csv_filename = 'replication.csv'
 with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
     fieldnames = ['Subject', 'Status', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
