@@ -80,8 +80,8 @@ def determine_subject(subject):
         return 'SSRS'
     elif 'Sales_Portal' in subject:
         return 'Sales_Portal'
-    elif 'Gitlab' in subject:
-        return 'Gitlab'
+    elif 'GitLab' in subject:
+        return 'GitLab'
     elif 'ReverseProxy' in subject:
         return 'ReverseProxy'
     elif 'PLM' in subject:
