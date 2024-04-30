@@ -12,7 +12,7 @@ load_dotenv()
 imap_server_url = os.getenv('IMAP_SERVER_URL')
 imap_username = os.getenv('IMAP_USERNAME')
 imap_password = os.getenv('IMAP_PASSWORD')
-mailbox_folder = os.getenv('EMAIL_FOLDER')
+mailbox_folder = os.getenv('MAIL_FOLDER')
 
 def login_to_imap_server(imap_server_url, username, password):
     """Login to the IMAP server."""
@@ -111,7 +111,7 @@ def main():
             print(f"Error processing email with UID {email_uid}: {e}")
 
     # Save email content to a CSV file with the same name as the mailbox folder
-    csv_filename = f"{mailbox_folder}.csv"
+    csv_filename = f"{mailbox_folder.replace('/', '_')}.csv"
     save_to_csv(emails_content, csv_filename)
 
     # Print a message to confirm that the CSV file has been created
