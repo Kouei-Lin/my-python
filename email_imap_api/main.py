@@ -42,13 +42,36 @@ def parse_email_content(email_data):
 def extract_information_from_body(body):
     """Extract required information from the email body."""
     soup = BeautifulSoup(body, 'html.parser')
-    start_time = soup.find('td', string='Start time').find_next_sibling('td').text.strip() if soup.find('td', string='Start time') else 'N/A'
-    end_time = soup.find('td', string='End time').find_next_sibling('td').text.strip() if soup.find('td', string='End time') else 'N/A'
-    size = soup.find('td', string='Total size').find_next_sibling('td').text.strip() if soup.find('td', string='Total size') else 'N/A'
-    read = soup.find('td', string='Data read').find_next_sibling('td').text.strip() if soup.find('td', string='Data read') else 'N/A'
-    transferred = soup.find('td', string='Transferred').find_next_sibling('td').text.strip() if soup.find('td', string='Transferred') else 'N/A'
-    duration = soup.find('td', string='Duration').find_next_sibling('td').text.strip() if soup.find('td', string='Duration') else 'N/A'
-    return start_time, end_time, size, read, transferred, duration
+    
+    # Count occurrences of "Success" and "Error"
+    success_count = body.count("Success")
+    error_count = body.count("Error")
+    
+    # Extract start time
+    start_time_tag = soup.find('td', string='Start time')
+    start_time = start_time_tag.find_next_sibling('td').text.strip() if start_time_tag else 'N/A'
+    
+    # Extract end time
+    end_time_tag = soup.find('td', string='End time')
+    end_time = end_time_tag.find_next_sibling('td').text.strip() if end_time_tag else 'N/A'
+    
+    # Extract size
+    size_tag = soup.find('td', string='Total size')
+    size = size_tag.find_next_sibling('td').text.strip() if size_tag else 'N/A'
+    
+    # Extract read
+    read_tag = soup.find('td', string='Data read')
+    read = read_tag.find_next_sibling('td').text.strip() if read_tag else 'N/A'
+    
+    # Extract transferred
+    transferred_tag = soup.find('td', string='Transferred')
+    transferred = transferred_tag.find_next_sibling('td').text.strip() if transferred_tag else 'N/A'
+    
+    # Extract duration
+    duration_tag = soup.find('td', string='Duration')
+    duration = duration_tag.find_next_sibling('td').text.strip() if duration_tag else 'N/A'
+    
+    return start_time, end_time, size, read, transferred, duration, success_count, error_count
 
 def determine_subject(subject):
     """Determine the value for the 'Subject' column."""
@@ -56,13 +79,37 @@ def determine_subject(subject):
         return 'MAWF'
     elif 'SECOM' in subject:
         return 'SECOM'
+    elif 'NAS' in subject:
+        return 'NAS'
+    elif 'IOC_RMA_PDR' in subject:
+        return 'IOC_RMA_PDR'
+    elif 'Configuration' in subject:
+        return 'Configuration'
+    elif 'Mantis' in subject:
+        return 'Mantis'
+    elif 'Jira' in subject:
+        return 'Jira'
+    elif 'MediaWiki' in subject:
+        return 'MediaWiki'
+    elif 'PDM2' in subject:
+        return 'PDM2'
+    elif 'SSRS' in subject:
+        return 'SSRS'
+    elif 'Sales_Portal' in subject:
+        return 'Sales_Portal'
+    elif 'Gitlab' in subject:
+        return 'Gitlab'
+    elif 'ReverseProxy' in subject:
+        return 'ReverseProxy'
+    elif 'PLM' in subject:
+        return 'PLM'
     else:
         return 'ELSE'
 
 def save_to_csv(emails_content, csv_filename):
     """Save email content to a CSV file."""
     with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['Subject', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
+        fieldnames = ['Subject', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration', 'Success Count', 'Error Count']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for email_content in emails_content:
@@ -92,7 +139,7 @@ def main():
             subject, body = parse_email_content(email_data[0][1])
 
             # Get required information from the email body
-            start_time, end_time, size, read, transferred, duration = extract_information_from_body(body)
+            start_time, end_time, size, read, transferred, duration, success_count, error_count = extract_information_from_body(body)
 
             # Determine the value for the 'Subject' column
             subject_value = determine_subject(subject)
@@ -105,7 +152,9 @@ def main():
                 'Size': size,
                 'Read': read,
                 'Transferred': transferred,
-                'Duration': duration
+                'Duration': duration,
+                'Success Count': success_count,
+                'Error Count': error_count
             })
         except Exception as e:
             print(f"Error processing email with UID {email_uid}: {e}")
