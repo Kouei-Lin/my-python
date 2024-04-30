@@ -12,7 +12,7 @@ load_dotenv()
 imap_server_url = os.getenv('IMAP_SERVER_URL')
 imap_username = os.getenv('IMAP_USERNAME')
 imap_password = os.getenv('IMAP_PASSWORD')
-mailbox_folder = os.getenv('REPLICATION_FOLDER')
+mailbox_folder = os.getenv('SUCCESS_FOLDER')
 
 # Connect to the IMAP server without SSL/TLS encryption
 imap_server = imaplib.IMAP4(imap_server_url)
@@ -59,6 +59,26 @@ for email_uid in data[0].split():
             subject_value = 'MAWF'
         elif 'SECOM' in subject:
             subject_value = 'SECOM'
+        elif 'NAS' in subject:
+            subject_value = 'NAS'
+        elif 'MediaWiki' in subject:
+            subject_value = 'WiKi'
+        elif 'Mantis' in subject:
+            subject_value = 'Mantis'
+        elif 'IOC_RMA_PDR' in subject:
+            subject_value = 'IOC_RMA_PDR'
+        elif 'Gitlab' in subject:
+            subject_value = 'Gitlab'
+        elif 'Jira' in subject:
+            subject_value = 'Jira'
+        elif 'PLM' in subject:
+            subject_value = 'PLM'
+        elif 'PDM2' in subject:
+            subject_value = 'PDM2'
+        elif 'SSRS' in subject:
+            subject_value = 'SSRS'
+        elif 'Sales_Portal' in subject:
+            subject_value = 'Sales_Portal'
         else:
             subject_value = 'ELSE'
 
@@ -76,7 +96,38 @@ for email_uid in data[0].split():
         print(f"Error processing email with UID {email_uid}: {e}")
 
 # Save email content to a CSV file
-csv_filename = 'replication.csv'
+csv_filename = 'success.csv'
+with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+    fieldnames = ['Subject', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    writer.writeheader()
+    for email_content in emails_content:
+        writer.writerow(email_content)
+
+# Print a message to confirm that the CSV file has been created
+print(f"Email content saved to {csv_filename}")
+
+# Don't forget to close the connection when done
+imap_server.logout()
+
+        else:
+            subject_value = 'ELSE'
+
+        # Append email content to the list
+        emails_content.append({
+            'Subject': subject_value,
+            'Start Time': start_time,
+            'End Time': end_time,
+            'Size': size,
+            'Read': read,
+            'Transferred': transferred,
+            'Duration': duration
+        })
+    except Exception as e:
+        print(f"Error processing email with UID {email_uid}: {e}")
+
+# Save email content to a CSV file
+csv_filename = 'success.csv'
 with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
     fieldnames = ['Subject', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
