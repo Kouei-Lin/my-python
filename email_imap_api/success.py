@@ -110,34 +110,3 @@ print(f"Email content saved to {csv_filename}")
 # Don't forget to close the connection when done
 imap_server.logout()
 
-        else:
-            subject_value = 'ELSE'
-
-        # Append email content to the list
-        emails_content.append({
-            'Subject': subject_value,
-            'Start Time': start_time,
-            'End Time': end_time,
-            'Size': size,
-            'Read': read,
-            'Transferred': transferred,
-            'Duration': duration
-        })
-    except Exception as e:
-        print(f"Error processing email with UID {email_uid}: {e}")
-
-# Save email content to a CSV file
-csv_filename = 'success.csv'
-with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
-    fieldnames = ['Subject', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    writer.writeheader()
-    for email_content in emails_content:
-        writer.writerow(email_content)
-
-# Print a message to confirm that the CSV file has been created
-print(f"Email content saved to {csv_filename}")
-
-# Don't forget to close the connection when done
-imap_server.logout()
-
