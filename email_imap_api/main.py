@@ -16,13 +16,13 @@ imap_password = os.getenv('IMAP_PASSWORD')
 mailbox_folder = os.getenv('MAIL_FOLDER')
 
 def login_to_imap_server(imap_server_url, username, password):
-    """Login to the IMAP server."""
+    # Login to the IMAP server.
     imap_server = imaplib.IMAP4(imap_server_url)
     imap_server.login(username, password)
     return imap_server
 
 def fetch_emails(imap_server, mailbox_folder):
-    """Fetch emails from the specified mailbox folder."""
+    # Fetch emails from the specified mailbox folder.
     status, data = imap_server.select(mailbox_folder)
     if status != 'OK':
         raise ValueError(f"Failed to select mailbox folder {mailbox_folder}.")
@@ -34,7 +34,7 @@ def fetch_emails(imap_server, mailbox_folder):
     return email_ids[0].split()
 
 def parse_email_content(email_data):
-    """Parse email content and extract date."""
+    # Parse email content and extract date.
     email_message = message_from_bytes(email_data)
     subject = email_message['Subject']
     date_str = email_message['Date']
@@ -43,7 +43,7 @@ def parse_email_content(email_data):
     return subject, date, body
 
 def extract_information_from_body(body):
-    """Extract required information from the email body."""
+    # Extract required information from the email body.
     soup = BeautifulSoup(body, 'html.parser')
     
     # Initialize variables to store extracted information
@@ -57,7 +57,7 @@ def extract_information_from_body(body):
     return start_time, end_time, size, read, transferred, duration
 
 def determine_subject(subject):
-    """Determine the value for the 'Subject' column."""
+    # Determine the value for the 'Subject' column.
     if 'MAWF' in subject:
         return 'MAWF'
     elif 'SECOM' in subject:
@@ -90,7 +90,7 @@ def determine_subject(subject):
         return 'ELSE'
 
 def save_to_csv(emails_content, csv_filename):
-    """Save email content to a CSV file."""
+    # Save email content to a CSV file.
     with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = ['Subject', 'Date', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
