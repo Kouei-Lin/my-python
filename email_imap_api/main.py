@@ -109,10 +109,10 @@ def main():
     
     email_ids = client.fetch_emails(mailbox_folder)
     
+    extractor = EmailContentExtractor()
     emails_content = []
     
-    extractor = EmailContentExtractor()
-    
+    # Fetch emails and parse them
     for email_uid in email_ids:
         try:
             print(f"Fetching email with UID: {email_uid}...")
@@ -139,12 +139,14 @@ def main():
         except Exception as e:
             print(f"Error processing email with UID {email_uid}: {e}")
     
+    # Close the connection to the IMAP server
+    client.logout()
+    
+    # Save parsed email content to CSV file
     csv_filename = f"{mailbox_folder.replace('/', '_')}.csv"
     EmailDataSaver.save_to_csv(emails_content, csv_filename)
     
     print(f"Email content saved to {csv_filename}")
-    
-    client.logout()
 
 if __name__ == "__main__":
     main()
