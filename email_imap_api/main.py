@@ -1,6 +1,7 @@
 import os
 import csv
 import imaplib
+import sqlite3
 from dotenv import load_dotenv
 from email import message_from_bytes
 from bs4 import BeautifulSoup
@@ -95,6 +96,37 @@ class EmailDataSaver:
             writer.writeheader()
             for email_content in emails_content:
                 writer.writerow(email_content)
+    
+    @staticmethod
+    def save_to_sqlite(emails_content, db_filename):
+        conn = sqlite3.connect(db_filename)
+        cursor = conn.cursor()
+        
+        # Create table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS emails (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                subject TEXT,
+                date TEXT,
+                start_time TEXT,
+                end_time TEXT,
+                size TEXT,
+                read TEXT,
+                transferred TEXT,
+                duration TEXT
+            )
+        ''')
+        
+        # Insert data
+        for email_content in emails_content:
+            cursor.execute('''
+                INSERT INTO emails (subject, date, start_time, end_time, size, read, transferred, duration)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (email_content['Subject'], email_content['Date'], email_content['Start Time'], email_content['End Time'], email_content['Size'], email_content['Read'], email_content['Transferred'], email_content['Duration']))
+        
+        # Commit changes and close connection
+        conn.commit()
+        conn.close()
 
 def main():
     load_dotenv()
@@ -142,11 +174,10 @@ def main():
     # Close the connection to the IMAP server
     client.logout()
     
-    # Save parsed email content to CSV file
-    csv_filename = f"{mailbox_folder.replace('/', '_')}.csv"
-    EmailDataSaver.save_to_csv(emails_content, csv_filename)
-    
-    print(f"Email content saved to {csv_filename}")
+    # Save parsed email content to SQLite database
+    db_filename = f"{mailbox_folder.replace('/', '_')}.db"
+    EmailDataSaver.save_to_sqlite(emails_content, db_filename)
+    print(f"Email content saved to {db_filename}")
 
 if __name__ == "__main__":
     main()
