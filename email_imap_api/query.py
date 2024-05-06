@@ -47,6 +47,6 @@ local_query = SQLiteQuery()
 local_query.query_local_db()
 
 # Example usage for remote SQLite database via SSH
-remote_query = SQLiteQuery()
-remote_query.query_remote_db()
+# remote_query = SQLiteQuery()
+# remote_query.query_remote_db()
 
