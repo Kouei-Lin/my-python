@@ -96,7 +96,6 @@ class EmailDataSaver:
             cursor = conn.cursor()
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS emails (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     subject TEXT,
                     date TEXT,
                     start_time TEXT,
