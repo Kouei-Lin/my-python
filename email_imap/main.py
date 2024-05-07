@@ -106,10 +106,20 @@ class EmailDataSaver:
                     duration TEXT
                 )
             ''')
-            cursor.executemany('''
-                INSERT INTO emails (subject, date, start_time, end_time, size, read, transferred, duration)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', [(email['Subject'], email['Date'], email['Start Time'], email['End Time'], email['Size'], email['Read'], email['Transferred'], email['Duration']) for email in self.emails_content])
+            for email in self.emails_content:
+                cursor.execute('''
+                    INSERT INTO emails (subject, date, start_time, end_time, size, read, transferred, duration)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    email['Subject'],
+                    email['Date'],
+                    email['Start Time'],
+                    email['End Time'],
+                    email['Size'],
+                    email['Read'],
+                    email['Transferred'],
+                    email['Duration']
+                ))
 
 def main():
     load_dotenv()
