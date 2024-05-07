@@ -126,9 +126,13 @@ def main():
     
     extractor = EmailContentExtractor()
     emails_content = []
+    processed_uids = set()  # Set to store processed email UIDs
     
     # Fetch emails and parse them
     for email_uid in email_ids:
+        if email_uid in processed_uids:
+            continue  # Skip processing if email UID has already been processed
+        
         try:
             print(f"Fetching email with UID: {email_uid}...")
             status, email_data = client.imap_server.fetch(email_uid, '(RFC822)')
@@ -152,6 +156,7 @@ def main():
                 'Duration': duration
             }
             emails_content.append(email_info)
+            processed_uids.add(email_uid)  # Add email UID to processed set
         except Exception as e:
             print(f"Error processing email with UID {email_uid}: {e}")
     
