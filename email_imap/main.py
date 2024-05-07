@@ -60,7 +60,7 @@ class EmailContentExtractor:
     @staticmethod
     def determine_subject(subject):
         subjects = {
-            'MAFW': 'MAFW',
+            'MAWF': 'MAWF',
             'SECOM': 'SECOM',
             'NAS': 'NAS',
             'IOC_RMA_PDR': 'IOC_RMA_PDR',

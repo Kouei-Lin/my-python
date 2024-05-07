@@ -28,7 +28,7 @@ def main():
     st.title("Email Data Viewer")
 
     # Select subject
-    selected_subject = st.selectbox("Select Subject:", ["MAFW", "SECOM"])
+    selected_subject = st.selectbox("Select Subject:", ["MAWF", "SECOM"])
 
     # Execute query to fetch data based on selected subject
     data = query_emails(selected_subject)
