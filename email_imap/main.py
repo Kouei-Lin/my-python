@@ -7,7 +7,7 @@ from email import message_from_bytes
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-class EmailClient:
+class EmailIMAPClient:
     def __init__(self, imap_server_url, username, password):
         self.imap_server_url = imap_server_url
         self.username = username
@@ -46,46 +46,39 @@ class EmailContentExtractor:
     @staticmethod
     def extract_information_from_body(body):
         soup = BeautifulSoup(body, 'html.parser')
-        start_time = soup.find('td', string='Start time').find_next_sibling('td').text.strip() if soup.find('td', string='Start time') else 'N/A'
-        end_time = soup.find('td', string='End time').find_next_sibling('td').text.strip() if soup.find('td', string='End time') else 'N/A'
-        size = soup.find('td', string='Total size').find_next_sibling('td').text.strip() if soup.find('td', string='Total size') else 'N/A'
-        read = soup.find('td', string='Data read').find_next_sibling('td').text.strip() if soup.find('td', string='Data read') else 'N/A'
-        transferred = soup.find('td', string='Transferred').find_next_sibling('td').text.strip() if soup.find('td', string='Transferred') else 'N/A'
-        duration = soup.find('td', string='Duration').find_next_sibling('td').text.strip() if soup.find('td', string='Duration') else 'N/A'
-        return start_time, end_time, size, read, transferred, duration
+        fields = ['Start time', 'End time', 'Total size', 'Data read', 'Transferred', 'Duration']
+        
+        extracted_info = {}
+        for field in fields:
+            tag = soup.find('td', string=field)
+            value = tag.find_next_sibling('td').text.strip() if tag else 'N/A'
+            extracted_info[field.lower().replace(' ', '_')] = value
+        
+        return extracted_info['start_time'], extracted_info['end_time'], extracted_info['total_size'], \
+               extracted_info['data_read'], extracted_info['transferred'], extracted_info['duration']
     
     @staticmethod
     def determine_subject(subject):
-        if 'MAWF' in subject:
-            return 'MAWF'
-        elif 'SECOM' in subject:
-            return 'SECOM'
-        elif 'NAS' in subject:
-            return 'NAS'
-        elif 'IOC_RMA_PDR' in subject:
-            return 'IOC_RMA_PDR'
-        elif 'Configuration' in subject:
-            return 'Configuration'
-        elif 'Mantis' in subject:
-            return 'Mantis'
-        elif 'Jira' in subject:
-            return 'Jira'
-        elif 'MediaWiki' in subject:
-            return 'MediaWiki'
-        elif 'PDM2' in subject:
-            return 'PDM2'
-        elif 'SSRS' in subject:
-            return 'SSRS'
-        elif 'Sales_Portal' in subject:
-            return 'Sales_Portal'
-        elif 'GitLab' in subject:
-            return 'GitLab'
-        elif 'ReverseProxy' in subject:
-            return 'ReverseProxy'
-        elif 'PLM' in subject:
-            return 'PLM'
-        else:
-            return 'ELSE'
+        subjects = {
+            'MAWF': 'MAWF',
+            'SECOM': 'SECOM',
+            'NAS': 'NAS',
+            'IOC_RMA_PDR': 'IOC_RMA_PDR',
+            'Configuration': 'Configuration',
+            'Mantis': 'Mantis',
+            'Jira': 'Jira',
+            'MediaWiki': 'MediaWiki',
+            'PDM2': 'PDM2',
+            'SSRS': 'SSRS',
+            'Sales_Portal': 'Sales_Portal',
+            'GitLab': 'GitLab',
+            'ReverseProxy': 'ReverseProxy',
+            'PLM': 'PLM'
+        }
+        for keyword, label in subjects.items():
+            if keyword in subject:
+                return label
+        return 'ELSE'
 
 class EmailDataSaver:
     @staticmethod
@@ -94,39 +87,29 @@ class EmailDataSaver:
             fieldnames = ['Subject', 'Date', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
-            for email_content in emails_content:
-                writer.writerow(email_content)
+            writer.writerows(emails_content)
     
     @staticmethod
     def save_to_sqlite(emails_content, db_filename):
-        conn = sqlite3.connect(db_filename)
-        cursor = conn.cursor()
-        
-        # Create table
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS emails (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                subject TEXT,
-                date TEXT,
-                start_time TEXT,
-                end_time TEXT,
-                size TEXT,
-                read TEXT,
-                transferred TEXT,
-                duration TEXT
-            )
-        ''')
-        
-        # Insert data
-        for email_content in emails_content:
+        with sqlite3.connect(db_filename) as conn:
+            cursor = conn.cursor()
             cursor.execute('''
+                CREATE TABLE IF NOT EXISTS emails (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    subject TEXT,
+                    date TEXT,
+                    start_time TEXT,
+                    end_time TEXT,
+                    size TEXT,
+                    read TEXT,
+                    transferred TEXT,
+                    duration TEXT
+                )
+            ''')
+            cursor.executemany('''
                 INSERT INTO emails (subject, date, start_time, end_time, size, read, transferred, duration)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (email_content['Subject'], email_content['Date'], email_content['Start Time'], email_content['End Time'], email_content['Size'], email_content['Read'], email_content['Transferred'], email_content['Duration']))
-        
-        # Commit changes and close connection
-        conn.commit()
-        conn.close()
+            ''', [(email['Subject'], email['Date'], email['Start Time'], email['End Time'], email['Size'], email['Read'], email['Transferred'], email['Duration']) for email in emails_content])
 
 def main():
     load_dotenv()
@@ -136,7 +119,7 @@ def main():
     imap_password = os.getenv('IMAP_PASSWORD')
     mailbox_folder = os.getenv('MAIL_FOLDER')
     
-    client = EmailClient(imap_server_url, imap_username, imap_password)
+    client = EmailIMAPClient(imap_server_url, imap_username, imap_password)
     client.login()
     
     email_ids = client.fetch_emails(mailbox_folder)
@@ -158,7 +141,7 @@ def main():
             
             subject_value = extractor.determine_subject(subject)
             
-            emails_content.append({
+            email_info = {
                 'Subject': subject_value,
                 'Date': date,
                 'Start Time': start_time,
@@ -167,7 +150,8 @@ def main():
                 'Read': read,
                 'Transferred': transferred,
                 'Duration': duration
-            })
+            }
+            emails_content.append(email_info)
         except Exception as e:
             print(f"Error processing email with UID {email_uid}: {e}")
     
