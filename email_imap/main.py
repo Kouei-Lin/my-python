@@ -96,6 +96,7 @@ class EmailDataSaver:
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS emails (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    uid INTEGER UNIQUE,
                     subject TEXT,
                     date TEXT,
                     start_time TEXT,
@@ -107,9 +108,9 @@ class EmailDataSaver:
                 )
             ''')
             cursor.executemany('''
-                INSERT INTO emails (subject, date, start_time, end_time, size, read, transferred, duration)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', [(email['Subject'], email['Date'], email['Start Time'], email['End Time'], email['Size'], email['Read'], email['Transferred'], email['Duration']) for email in emails_content])
+                INSERT OR IGNORE INTO emails (uid, subject, date, start_time, end_time, size, read, transferred, duration)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', [(email['UID'], email['Subject'], email['Date'], email['Start Time'], email['End Time'], email['Size'], email['Read'], email['Transferred'], email['Duration']) for email in emails_content])
 
 def main():
     load_dotenv()
@@ -126,13 +127,9 @@ def main():
     
     extractor = EmailContentExtractor()
     emails_content = []
-    processed_uids = set()  # Set to store processed email UIDs
     
     # Fetch emails and parse them
     for email_uid in email_ids:
-        if email_uid in processed_uids:
-            continue  # Skip processing if email UID has already been processed
-        
         try:
             print(f"Fetching email with UID: {email_uid}...")
             status, email_data = client.imap_server.fetch(email_uid, '(RFC822)')
@@ -146,6 +143,7 @@ def main():
             subject_value = extractor.determine_subject(subject)
             
             email_info = {
+                'UID': email_uid,
                 'Subject': subject_value,
                 'Date': date,
                 'Start Time': start_time,
@@ -156,7 +154,6 @@ def main():
                 'Duration': duration
             }
             emails_content.append(email_info)
-            processed_uids.add(email_uid)  # Add email UID to processed set
         except Exception as e:
             print(f"Error processing email with UID {email_uid}: {e}")
     
