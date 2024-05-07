@@ -1,3 +1,2 @@
-imaplib
 python-dotenv
 beautifulsoup4
