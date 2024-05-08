@@ -36,8 +36,13 @@ def calculate_average(data):
     avg_size = data['size'].mean()
     avg_read = data['read'].mean()
     avg_transferred = data['transferred'].mean()
-    avg_duration = data['duration'].mean()
-    return avg_size, avg_read, avg_transferred, avg_duration
+    avg_duration_seconds = data['duration'].mean()
+    
+    # Convert average duration from seconds to hh:mm:ss format
+    avg_duration_hms = pd.to_timedelta(avg_duration_seconds, unit='s')
+    avg_duration_str = str(avg_duration_hms).split()[2]  # Extracting hh:mm:ss from timedelta
+    
+    return avg_size, avg_read, avg_transferred, avg_duration_str
 
 # Streamlit code for the web app
 def main():
