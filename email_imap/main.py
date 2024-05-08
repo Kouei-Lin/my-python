@@ -39,7 +39,7 @@ class EmailContentExtractor:
         email_message = message_from_bytes(email_data)
         subject = email_message['Subject']
         date_str = email_message['Date']
-        date = datetime.strptime(date_str, '%d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d')
+        date = datetime.strptime(date_str, '%d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d %H:%M:%S')
         body = email_message.get_payload(decode=True).decode()
         return subject, date, body
     
@@ -54,8 +54,7 @@ class EmailContentExtractor:
             value = tag.find_next_sibling('td').text.strip() if tag else 'N/A'
             extracted_info[field.lower().replace(' ', '_')] = value
         
-        return extracted_info['start_time'], extracted_info['end_time'], extracted_info['total_size'], \
-               extracted_info['data_read'], extracted_info['transferred'], extracted_info['duration']
+        return extracted_info['total_size'], extracted_info['data_read'], extracted_info['transferred'], extracted_info['duration']
     
     @staticmethod
     def determine_subject(subject):
@@ -86,7 +85,7 @@ class EmailDataSaver:
     
     def save_to_csv(self, csv_filename):
         with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = ['Subject', 'Date', 'Start Time', 'End Time', 'Size', 'Read', 'Transferred', 'Duration']
+            fieldnames = ['Subject', 'Date', 'Size', 'Read', 'Transferred', 'Duration']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(self.emails_content)
@@ -98,23 +97,20 @@ class EmailDataSaver:
                 CREATE TABLE IF NOT EXISTS emails (
                     subject TEXT,
                     date TEXT,
-                    start_time TEXT,
-                    end_time TEXT,
                     size TEXT,
                     read TEXT,
                     transferred TEXT,
                     duration TEXT
                 )
             ''')
+            cursor.execute('DELETE FROM emails')
             for email in self.emails_content:
                 cursor.execute('''
-                    INSERT INTO emails (subject, date, start_time, end_time, size, read, transferred, duration)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO emails (subject, date, size, read, transferred, duration)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ''', (
                     email['Subject'],
                     email['Date'],
-                    email['Start Time'],
-                    email['End Time'],
                     email['Size'],
                     email['Read'],
                     email['Transferred'],
@@ -147,15 +143,13 @@ def main():
                 continue
             
             subject, date, body = extractor.parse_email_content(email_data[0][1])
-            start_time, end_time, size, read, transferred, duration = extractor.extract_information_from_body(body)
+            size, read, transferred, duration = extractor.extract_information_from_body(body)
             
             subject_value = extractor.determine_subject(subject)
             
             email_info = {
                 'Subject': subject_value,
                 'Date': date,
-                'Start Time': start_time,
-                'End Time': end_time,
                 'Size': size,
                 'Read': read,
                 'Transferred': transferred,
