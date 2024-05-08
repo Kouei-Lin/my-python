@@ -39,7 +39,7 @@ class EmailContentExtractor:
         email_message = message_from_bytes(email_data)
         subject = email_message['Subject']
         date_str = email_message['Date']
-        date = datetime.strptime(date_str, '%d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d %H:%M:%S')
+        date = datetime.strptime(date_str, '%d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d')
         body = email_message.get_payload(decode=True).decode()
         return subject, date, body
     
@@ -54,7 +54,8 @@ class EmailContentExtractor:
             value = tag.find_next_sibling('td').text.strip() if tag else 'N/A'
             extracted_info[field.lower().replace(' ', '_')] = value
         
-        return extracted_info['total_size'], extracted_info['data_read'], extracted_info['transferred'], extracted_info['duration']
+        return extracted_info['start_time'], extracted_info['end_time'], extracted_info['total_size'], \
+               extracted_info['data_read'], extracted_info['transferred'], extracted_info['duration']
     
     @staticmethod
     def determine_subject(subject):
@@ -103,7 +104,6 @@ class EmailDataSaver:
                     duration TEXT
                 )
             ''')
-            cursor.execute('DELETE FROM emails')
             for email in self.emails_content:
                 cursor.execute('''
                     INSERT INTO emails (subject, date, size, read, transferred, duration)
@@ -116,6 +116,14 @@ class EmailDataSaver:
                     email['Transferred'],
                     email['Duration']
                 ))
+
+def convert_to_gb_or_mb(value_with_unit):
+    value, unit = value_with_unit.split()
+    value = float(value)
+    if unit == 'GB':
+        return f"{value:.2f} GB"
+    else:
+        return f"{value / 1000:.2f} GB"
 
 def main():
     load_dotenv()
@@ -143,16 +151,19 @@ def main():
                 continue
             
             subject, date, body = extractor.parse_email_content(email_data[0][1])
-            size, read, transferred, duration = extractor.extract_information_from_body(body)
+            start_time, end_time, size, read, transferred, duration = extractor.extract_information_from_body(body)
             
             subject_value = extractor.determine_subject(subject)
+            size_value = convert_to_gb_or_mb(size)
+            read_value = convert_to_gb_or_mb(read)
+            transferred_value = convert_to_gb_or_mb(transferred)
             
             email_info = {
                 'Subject': subject_value,
                 'Date': date,
-                'Size': size,
-                'Read': read,
-                'Transferred': transferred,
+                'Size': size_value,
+                'Read': read_value,
+                'Transferred': transferred_value,
                 'Duration': duration
             }
             emails_content.append(email_info)
