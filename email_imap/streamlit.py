@@ -63,9 +63,11 @@ def main():
         # Calculate mean of the numerical value columns
         mean_values = data[['size_value', 'read_value', 'transferred_value']].mean()
 
-        # Display the mean values
+        # Display the mean values side by side
         st.write("Mean Values:")
-        st.write(mean_values)
+        st.write(f"Size: {mean_values['size_value']:.2f} GB")
+        st.write(f"Read: {mean_values['read_value']:.2f} MB")
+        st.write(f"Transferred: {mean_values['transferred_value']:.2f} MB")
 
 if __name__ == "__main__":
     main()
