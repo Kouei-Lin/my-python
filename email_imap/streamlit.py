@@ -28,9 +28,11 @@ def query_emails(subject):
 def extract_value(s):
     match = re.match(r'(\d+(\.\d+)?)\s*(\w+)', s)
     if match:
-        return float(match.group(1))
+        value = float(match.group(1))
+        unit = match.group(3).upper()
+        return value, unit
     else:
-        return None
+        return None, None
 
 # Streamlit code for the web app
 def main():
@@ -50,24 +52,29 @@ def main():
         # Convert column names to lowercase
         data.columns = map(str.lower, data.columns)
 
-        # Extract numerical values from 'size', 'read', and 'transferred' columns if present
+        # Extract numerical values and units from 'size', 'read', and 'transferred' columns if present
         for col in ['size', 'read', 'transferred']:
             if col in data.columns:
-                data[col + '_value'] = data[col].apply(extract_value)
+                data[f'{col}_value'], data[f'{col}_unit'] = zip(*data[col].apply(extract_value))
 
-                # Drop original column
-                data.drop(columns=[col], inplace=True)
+                # Convert size to MB if unit is GB
+                data.loc[data[f'{col}_unit'] == 'GB', f'{col}_value'] *= 1000
+
+                # Drop original columns
+                data.drop(columns=[col, f'{col}_unit'], inplace=True)
             else:
                 st.warning(f"Column '{col}' not found in the DataFrame.")
 
         # Calculate mean of the numerical value columns
         mean_values = data[['size_value', 'read_value', 'transferred_value']].mean()
 
+        # Convert mean values to GB if they are greater than or equal to 1000 MB
+        mean_values_gb = mean_values.apply(lambda x: x / 1000 if x >= 1000 else x)
+
         # Display the mean values side by side
-        st.write("Mean Values:")
-        st.write(f"Size: {mean_values['size_value']:.2f} GB")
-        st.write(f"Read: {mean_values['read_value']:.2f} MB")
-        st.write(f"Transferred: {mean_values['transferred_value']:.2f} MB")
+        st.write(f"Avg. Size: {mean_values_gb['size_value']:.2f} {'GB' if mean_values_gb['size_value'] >= 1 else 'MB'}")
+        st.write(f"Avg. Read: {mean_values_gb['read_value']:.2f} {'GB' if mean_values_gb['read_value'] >= 1 else 'MB'}")
+        st.write(f"Avg. Transferred: {mean_values_gb['transferred_value']:.2f} {'GB' if mean_values_gb['transferred_value'] >= 1 else 'MB'}")
 
 if __name__ == "__main__":
     main()
