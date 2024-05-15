@@ -39,7 +39,7 @@ class EmailContentExtractor:
         email_message = message_from_bytes(email_data)
         subject = email_message['Subject']
         date_str = email_message['Date']
-        date = datetime.strptime(date_str, '%d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d')
+        date = datetime.strptime(date_str, '%d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d %H:%M:%S')
         body = email_message.get_payload(decode=True).decode()
         return subject, date, body
     
