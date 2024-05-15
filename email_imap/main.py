@@ -96,18 +96,20 @@ class EmailDataSaver:
             cursor = conn.cursor()
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS emails (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     subject TEXT,
                     date TEXT,
                     size TEXT,
                     read TEXT,
                     transferred TEXT,
                     duration TEXT,
-                    note TEXT
+                    note TEXT,
+                    UNIQUE(subject, date)
                 )
             ''')
             for email in self.emails_content:
                 cursor.execute('''
-                    INSERT INTO emails (subject, date, size, read, transferred, duration, note)
+                    INSERT OR IGNORE INTO emails (subject, date, size, read, transferred, duration, note)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     email['Subject'],
