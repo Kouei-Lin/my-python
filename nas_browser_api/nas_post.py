@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 
@@ -20,7 +21,7 @@ class SynType1:
         print("Navigating to URL:", self.url)
         self.driver.get(self.url)
 
-        wait = WebDriverWait(self.driver, 60)
+        wait = WebDriverWait(self.driver, 30)
         username_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_username')))
         username_input.send_keys(self.username)
 
@@ -31,13 +32,21 @@ class SynType1:
         login_button.click()
 
     def get_info(self):
-        wait = WebDriverWait(self.driver, 60)
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
-        
-        status_div = self.driver.find_element(By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')
+        wait = WebDriverWait(self.driver, 30)
+        try:
+            status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
+        except TimeoutException:
+            try:
+                status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-warning')))
+            except TimeoutException:
+                print("No status found")
+                return {"disk_status": "No status found"}
+
         status_text = status_div.text
-        
-        return {"disk_status": status_text}
+        if "Attention" in status_text:
+            return {"disk_status": "Attention"}
+        else:
+            return {"disk_status": status_text}
 
     def fetch_send_data(self):
         self.login()
@@ -72,7 +81,7 @@ class SynType2(SynType1):
         print("Navigating to URL:", self.url)
         self.driver.get(self.url)
 
-        wait = WebDriverWait(self.driver, 60)
+        wait = WebDriverWait(self.driver, 30)
         username_input = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[syno-id="username"]')))
         username_input.send_keys(self.username)
 
@@ -86,13 +95,21 @@ class SynType2(SynType1):
         login_button.click()
 
     def get_info(self):
-        wait = WebDriverWait(self.driver, 60)
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
-        
-        status_div = self.driver.find_element(By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')
+        wait = WebDriverWait(self.driver, 30)
+        try:
+            status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
+        except TimeoutException:
+            try:
+                status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-warning')))
+            except TimeoutException:
+                print("No status found")
+                return {"disk_status": "No status found"}
+
         status_text = status_div.text
-        
-        return {"disk_status": status_text}
+        if "Attention" in status_text:
+            return {"disk_status": "Attention"}
+        else:
+            return {"disk_status": status_text}
 
 
 def fetch_and_send_data(syn_instance):
