@@ -86,7 +86,7 @@ class EmailDataSaver:
     
     def save_to_csv(self, csv_filename):
         with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = ['Subject', 'Date', 'Size', 'Read', 'Transferred', 'Duration', 'Status']
+            fieldnames = ['Subject', 'Date', 'Size', 'Read', 'Transferred', 'Duration', 'Note']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(self.emails_content)
@@ -102,12 +102,12 @@ class EmailDataSaver:
                     read TEXT,
                     transferred TEXT,
                     duration TEXT,
-                    status TEXT
+                    note TEXT
                 )
             ''')
             for email in self.emails_content:
                 cursor.execute('''
-                    INSERT INTO emails (subject, date, size, read, transferred, duration, status)
+                    INSERT INTO emails (subject, date, size, read, transferred, duration, note)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     email['Subject'],
@@ -116,7 +116,7 @@ class EmailDataSaver:
                     email['Read'],
                     email['Transferred'],
                     email['Duration'],
-                    email['Status']
+                    email['Note']
                 ))
 
 def convert_to_gb_or_mb(value_with_unit):
@@ -147,7 +147,7 @@ def main():
     emails_content = []
     
     # Loop through each mailbox folder
-    for folder, status in mailbox_folders.items():
+    for folder, note in mailbox_folders.items():
         email_ids = client.fetch_emails(folder)
         
         # Fetch emails and parse them
@@ -174,7 +174,7 @@ def main():
                     'Read': read_value,
                     'Transferred': transferred_value,
                     'Duration': duration,
-                    'Status': status
+                    'Note': note
                 }
                 emails_content.append(email_info)
             except Exception as e:
