@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Function to connect to SQLite database and execute query
-def query_emails(subject):
+def query_emails():
     try:
         db_filename = os.getenv("LOCAL_DB_FILENAME")
         conn = sqlite3.connect(db_filename)
-        query = f"SELECT * FROM emails WHERE Subject = '{subject}' ORDER BY Date DESC"
+        query = "SELECT * FROM emails ORDER BY Date DESC"
         df = pd.read_sql_query(query, conn)
         conn.close()
         return df
@@ -27,15 +27,12 @@ def query_emails(subject):
 def main():
     st.title("Email Data Viewer")
 
-    # Select subject
-    selected_subject = st.selectbox("Select Subject:", ["MAWF", "SECOM"])
-
-    # Execute query to fetch data based on selected subject
-    data = query_emails(selected_subject)
+    # Execute query to fetch all data
+    data = query_emails()
 
     # Display the queried data
     if data is not None:
-        st.write(f"Email Data for {selected_subject}, ordered by Date (latest first):")
+        st.write("All Email Data, ordered by Date (latest first):")
         st.write(data)
 
 if __name__ == "__main__":
