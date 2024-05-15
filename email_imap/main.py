@@ -135,7 +135,7 @@ def main():
     imap_password = os.getenv('IMAP_PASSWORD')
     mailbox_folders = {
         'Veeam/Failed': 'Failed',
-        'Veeam/Replication': 'Retry',
+        'Veeam/Retry': 'Retry',
         'Veeam/Success': 'Success',
         'Veeam/Warning': 'Warning'
     }
