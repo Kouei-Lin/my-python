@@ -197,6 +197,17 @@ def clean_database(db_filename, since_date):
     with sqlite3.connect(db_filename) as conn:
         cursor = conn.cursor()
         cursor.execute('''
+            CREATE TABLE IF NOT EXISTS emails (
+                subject TEXT,
+                date TEXT,
+                size TEXT,
+                read TEXT,
+                transferred TEXT,
+                duration TEXT,
+                note TEXT
+            )
+        ''')
+        cursor.execute('''
             DELETE FROM emails
             WHERE date < ?
         ''', (since_date.strftime('%Y-%m-%d %H:%M:%S'),))
