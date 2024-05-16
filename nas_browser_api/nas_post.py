@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
+import time
 
 
 class SynType1:
@@ -76,6 +77,43 @@ class SynType1:
 class SynType2(SynType1):
     def __init__(self, user):
         super().__init__(user)
+        self.wait_time = 60
+
+    def login(self):
+        print("Navigating to URL:", self.url)
+        self.driver.get(self.url)
+
+        wait = WebDriverWait(self.driver, self.wait_time)
+        username_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_username')))
+        username_input.send_keys(self.username)
+
+        password_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_passwd')))
+        password_input.send_keys(self.password)
+
+        login_button = wait.until(EC.element_to_be_clickable((By.ID, 'login-btn')))
+        login_button.click()
+
+    def get_info(self):
+        wait = WebDriverWait(self.driver, self.wait_time)
+        try:
+            status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
+        except TimeoutException:
+            try:
+                status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-warning')))
+            except TimeoutException:
+                print("No status found")
+                return {"disk_status": "No status found"}
+
+        status_text = status_div.text
+        if "Attention" in status_text:
+            return {"disk_status": "Attention"}
+        else:
+            return {"disk_status": status_text}
+
+
+class SynType3(SynType1):
+    def __init__(self, user):
+        super().__init__(user)
 
     def login(self):
         print("Navigating to URL:", self.url)
@@ -126,24 +164,33 @@ syn_type1_users = [
     {"url": os.getenv("SYN_TYPE1_URL2"), "username": os.getenv("SYN_TYPE1_USER2"), "password": os.getenv("SYN_TYPE1_PASS2")},
     {"url": os.getenv("SYN_TYPE1_URL3"), "username": os.getenv("SYN_TYPE1_USER3"), "password": os.getenv("SYN_TYPE1_PASS3")},
     {"url": os.getenv("SYN_TYPE1_URL4"), "username": os.getenv("SYN_TYPE1_USER4"), "password": os.getenv("SYN_TYPE1_PASS4")},
-    {"url": os.getenv("SYN_TYPE1_URL5"), "username": os.getenv("SYN_TYPE1_USER5"), "password": os.getenv("SYN_TYPE1_PASS5")}
 ]
 
 # Test credentials for SynType2
 syn_type2_users = [
     {"url": os.getenv("SYN_TYPE2_URL1"), "username": os.getenv("SYN_TYPE2_USER1"), "password": os.getenv("SYN_TYPE2_PASS1")},
-    {"url": os.getenv("SYN_TYPE2_URL2"), "username": os.getenv("SYN_TYPE2_USER2"), "password": os.getenv("SYN_TYPE2_PASS2")}
+]
+
+# Test credentials for SynType3
+syn_type3_users = [
+    {"url": os.getenv("SYN_TYPE3_URL1"), "username": os.getenv("SYN_TYPE3_USER1"), "password": os.getenv("SYN_TYPE3_PASS1")},
+    {"url": os.getenv("SYN_TYPE3_URL2"), "username": os.getenv("SYN_TYPE3_USER2"), "password": os.getenv("SYN_TYPE3_PASS2")},
 ]
 
 # Create thread pool
 with ThreadPoolExecutor(max_workers=10) as executor:
+    # Create SynType2 instances and fetch data
+    for user in syn_type2_users:
+        instance = SynType2(user)
+        executor.submit(fetch_and_send_data, instance)
+
     # Create SynType1 instances and fetch data
     for user in syn_type1_users:
         instance = SynType1(user)
         executor.submit(fetch_and_send_data, instance)
 
-    # Create SynType2 instances and fetch data
-    for user in syn_type2_users:
-        instance = SynType2(user)
+    # Create SynType3 instances and fetch data
+    for user in syn_type3_users:
+        instance = SynType3(user)
         executor.submit(fetch_and_send_data, instance)
 
