@@ -35,6 +35,14 @@ def main():
         st.write("All Email Data, ordered by Date (latest first):")
         st.write(data)
 
+        # Calculate counts of Success, Failed, Retry, and Warning
+        note_counts = data['note'].value_counts()
+        st.write("Counts of Note Types:")
+        st.write("- Success:", note_counts.get("Success", 0))
+        st.write("- Failed:", note_counts.get("Failed", 0))
+        st.write("- Retry:", note_counts.get("Retry", 0))
+        st.write("- Warning:", note_counts.get("Warning", 0))
+
 if __name__ == "__main__":
     main()
 
