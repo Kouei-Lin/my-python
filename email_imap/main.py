@@ -5,7 +5,7 @@ import sqlite3
 from dotenv import load_dotenv
 from email import message_from_bytes
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class EmailIMAPClient:
     def __init__(self, imap_server_url, username, password):
@@ -18,12 +18,15 @@ class EmailIMAPClient:
         self.imap_server = imaplib.IMAP4(self.imap_server_url)
         self.imap_server.login(self.username, self.password)
     
-    def fetch_emails(self, mailbox_folder):
+    def fetch_emails(self, mailbox_folder, since_date):
+        since_date_str = since_date.strftime('%d-%b-%Y')
+        search_criteria = f'(SINCE {since_date_str})'
+        
         status, data = self.imap_server.select(mailbox_folder)
         if status != 'OK':
             raise ValueError(f"Failed to select mailbox folder {mailbox_folder}.")
         
-        status, email_ids = self.imap_server.search(None, 'ALL')
+        status, email_ids = self.imap_server.search(None, search_criteria)
         if status != 'OK':
             raise ValueError("Failed to search for emails.")
         
@@ -84,42 +87,35 @@ class EmailDataSaver:
     def __init__(self, emails_content):
         self.emails_content = emails_content
     
-    def save_to_csv(self, csv_filename):
-        with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = ['Subject', 'Date', 'Size', 'Read', 'Transferred', 'Duration', 'Note']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(self.emails_content)
-    
-    def save_to_sqlite(self, db_filename):
+    def save_to_sqlite(self, db_filename, since_date):
         with sqlite3.connect(db_filename) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS emails (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     subject TEXT,
                     date TEXT,
                     size TEXT,
                     read TEXT,
                     transferred TEXT,
                     duration TEXT,
-                    note TEXT,
-                    UNIQUE(subject, date)
+                    note TEXT
                 )
             ''')
             for email in self.emails_content:
-                cursor.execute('''
-                    INSERT OR IGNORE INTO emails (subject, date, size, read, transferred, duration, note)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    email['Subject'],
-                    email['Date'],
-                    email['Size'],
-                    email['Read'],
-                    email['Transferred'],
-                    email['Duration'],
-                    email['Note']
-                ))
+                email_date = datetime.strptime(email['Date'], '%Y-%m-%d %H:%M:%S')
+                if email_date >= since_date:
+                    cursor.execute('''
+                        INSERT INTO emails (subject, date, size, read, transferred, duration, note)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        email['Subject'],
+                        email['Date'],
+                        email['Size'],
+                        email['Read'],
+                        email['Transferred'],
+                        email['Duration'],
+                        email['Note']
+                    ))
 
 def convert_to_gb_or_mb(value_with_unit):
     value, unit = value_with_unit.split()
@@ -148,9 +144,12 @@ def main():
     extractor = EmailContentExtractor()
     emails_content = []
     
+    # Get today's date
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
     # Loop through each mailbox folder
     for folder, note in mailbox_folders.items():
-        email_ids = client.fetch_emails(folder)
+        email_ids = client.fetch_emails(folder, today)
         
         # Fetch emails and parse them
         for email_uid in email_ids:
@@ -188,7 +187,7 @@ def main():
     # Save parsed email content to SQLite database
     db_filename = 'emails_data.db'
     data_saver = EmailDataSaver(emails_content)
-    data_saver.save_to_sqlite(db_filename)
+    data_saver.save_to_sqlite(db_filename, today)
     print(f"Email content saved to {db_filename}")
 
 if __name__ == "__main__":
