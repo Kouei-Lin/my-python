@@ -147,10 +147,6 @@ def main():
     # Get today's date
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Clean the database
-    db_filename = 'emails_data.db'
-    clean_database(db_filename, today)
-    
     # Loop through each mailbox folder
     for folder, note in mailbox_folders.items():
         email_ids = client.fetch_emails(folder, today)
@@ -189,29 +185,10 @@ def main():
     client.logout()
     
     # Save parsed email content to SQLite database
+    db_filename = 'emails_data.db'
     data_saver = EmailDataSaver(emails_content)
     data_saver.save_to_sqlite(db_filename, today)
     print(f"Email content saved to {db_filename}")
-
-def clean_database(db_filename, since_date):
-    with sqlite3.connect(db_filename) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS emails (
-                subject TEXT,
-                date TEXT,
-                size TEXT,
-                read TEXT,
-                transferred TEXT,
-                duration TEXT,
-                note TEXT
-            )
-        ''')
-        cursor.execute('''
-            DELETE FROM emails
-            WHERE date < ?
-        ''', (since_date.strftime('%Y-%m-%d %H:%M:%S'),))
-        print("Database cleaned.")
 
 if __name__ == "__main__":
     main()

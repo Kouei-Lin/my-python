@@ -145,10 +145,6 @@ def main(start_date, end_date):
     extractor = EmailContentExtractor()
     emails_content = []
     
-    # Clean the database
-    db_filename = 'emails_data.db'
-    clean_database(db_filename, start_date, end_date)
-    
     # Loop through each mailbox folder
     for folder, note in mailbox_folders.items():
         email_ids = client.fetch_emails(folder, start_date, end_date)
@@ -187,29 +183,10 @@ def main(start_date, end_date):
     client.logout()
     
     # Save parsed email content to SQLite database
+    db_filename = 'emails_data.db'
     data_saver = EmailDataSaver(emails_content)
     data_saver.save_to_sqlite(db_filename, start_date, end_date)
     print(f"Email content saved to {db_filename}")
-
-def clean_database(db_filename, start_date, end_date):
-    with sqlite3.connect(db_filename) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS emails (
-                subject TEXT,
-                date TEXT,
-                size TEXT,
-                read TEXT,
-                transferred TEXT,
-                duration TEXT,
-                note TEXT
-            )
-        ''')
-        cursor.execute('''
-            DELETE FROM emails
-            WHERE date >= ? AND date < ?
-        ''', (start_date.strftime('%Y-%m-%d %H:%M:%S'), end_date.strftime('%Y-%m-%d %H:%M:%S')))
-        print("Database cleaned.")
 
 if __name__ == "__main__":
     start_date = datetime(2024, 5, 15)
