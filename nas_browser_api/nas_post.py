@@ -22,7 +22,7 @@ class SynType1:
         print("Navigating to URL:", self.url)
         self.driver.get(self.url)
 
-        wait = WebDriverWait(self.driver, 30)
+        wait = WebDriverWait(self.driver, 60)
         username_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_username')))
         username_input.send_keys(self.username)
 
@@ -33,7 +33,7 @@ class SynType1:
         login_button.click()
 
     def get_info(self):
-        wait = WebDriverWait(self.driver, 30)
+        wait = WebDriverWait(self.driver, 60)
         try:
             status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
         except TimeoutException:
@@ -77,7 +77,7 @@ class SynType1:
 class SynType2(SynType1):
     def __init__(self, user):
         super().__init__(user)
-        self.wait_time = 60
+        self.wait_time = 120
 
     def login(self):
         print("Navigating to URL:", self.url)
@@ -119,7 +119,7 @@ class SynType3(SynType1):
         print("Navigating to URL:", self.url)
         self.driver.get(self.url)
 
-        wait = WebDriverWait(self.driver, 30)
+        wait = WebDriverWait(self.driver, 60)
         username_input = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[syno-id="username"]')))
         username_input.send_keys(self.username)
 
