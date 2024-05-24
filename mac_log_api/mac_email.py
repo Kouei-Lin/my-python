@@ -41,15 +41,15 @@ smtp_server = os.getenv("SMTP_SERVER")
 smtp_port = int(os.getenv("SMTP_PORT"))
 smtp_username = os.getenv("SMTP_USERNAME")
 smtp_password = os.getenv("SMTP_PASSWORD")
-db_filename = os.getenv("DB_FILENAME")  # Assuming you have a variable named DB_FILENAME in your .env file
+db_filename = os.getenv("DB_FILENAME")
 
 # Get today's date and success count from the database
 today_date, success_count = get_todays_date_and_success_count_from_db(db_filename)
 
 # Example usage
-subject = "Today's Date and Success Count from Database"
-body = f"Today's date is: {today_date}\n"
-body += f"The count of 'Success' for today in the 'internet' column is: {success_count}"
+subject = f"{today_date} Internet Check"
+body = f"Date: {today_date}"
+body += f"Success: {success_count}"
 
 # Send the email
 send_email(sender_email, recipient_email, subject, body, smtp_server, smtp_port, smtp_username, smtp_password)
