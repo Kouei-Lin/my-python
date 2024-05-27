@@ -1,2 +1,6 @@
 Driver: https://github.com/mozilla/geckodriver/releases
 Unzip, mv geckodriver /usr/local/bin, chmod +x geckodriver
+
+#Selenium Grid
+docker-compose up -d
+python3 nas_grid.py
