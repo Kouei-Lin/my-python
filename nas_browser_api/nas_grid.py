@@ -1,25 +1,19 @@
 import os
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-import requests
 from dotenv import load_dotenv
-from selenium.webdriver.firefox.options import Options
+from web_driver_module import WebDriverManager
+from apprise_module import Apprise
 
 class SynType1:
     def __init__(self, url, username, password):
         self.url = url
         self.username = username
         self.password = password
-        ff_options = Options()
-        ff_options.add_argument("--headless")
-        grid_url = "http://127.0.0.1:4444/wd/hub"
-        self.driver = webdriver.Remote(
-            command_executor=grid_url,
-            options=ff_options
-        )
+        self.web_driver_manager = WebDriverManager()
+        self.driver = self.web_driver_manager.get_driver()
 
     def login(self):
         self.driver.get(self.url)
@@ -48,22 +42,8 @@ class SynType1:
         self.login()
         info = self.get_info()
         data = {"url": self.url, **info}
-        self.quit_driver()
+        self.web_driver_manager.quit_driver()
         return data
-
-    def notify_api(self, data):
-        api_endpoint = os.getenv('API_ENDPOINT')
-        if api_endpoint:
-            response = requests.post(api_endpoint, json=data)
-            if response.status_code == 201:
-                print(f"Data sent successfully for URL: {data['url']}")
-            else:
-                print(f"Failed to send data for URL: {data['url']}. Status code: {response.status_code}")
-        else:
-            print("API_ENDPOINT not found in the environment variables.")
-
-    def quit_driver(self):
-        self.driver.quit()
 
 class SynType2(SynType1):
     def __init__(self, url, username, password):
@@ -78,19 +58,6 @@ class SynType2(SynType1):
         password_input.send_keys(self.password)
         login_button = wait.until(EC.element_to_be_clickable((By.ID, 'login-btn')))
         login_button.click()
-
-    def get_info(self):
-        wait = WebDriverWait(self.driver, 120)
-        try:
-            status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
-        except TimeoutException:
-            try:
-                status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-warning')))
-            except TimeoutException:
-                print("No status found")
-                return {"disk_status": "No status found"}
-        status_text = status_div.text
-        return {"disk_status": "Attention"} if "Attention" in status_text else {"disk_status": status_text}
 
 class SynType3(SynType1):
     def __init__(self, url, username, password):
@@ -108,30 +75,23 @@ class SynType3(SynType1):
         login_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[syno-id="password-panel-next-btn"]')))
         login_button.click()
 
-    def get_info(self):
-        wait = WebDriverWait(self.driver, 30)
-        try:
-            status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-normal')))
-        except TimeoutException:
-            try:
-                status_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'syno-sysinfo-system-health-content-header-warning')))
-            except TimeoutException:
-                print("No status found")
-                return {"disk_status": "No status found"}
-        status_text = status_div.text
-        return {"disk_status": "Attention"} if "Attention" in status_text else {"disk_status": status_text}
-
 def fetch_and_send_data(syn_instance):
     data = syn_instance.fetch_send_data()
-    syn_instance.notify_api(data)
+    Apprise.ntfy(data)
 
 load_dotenv()
 
+def validate_env_variable(var_name):
+    value = os.getenv(var_name)
+    if not value:
+        raise ValueError(f"Environment variable {var_name} is not set.")
+    return value
+
 syn_type1_targets = [
-    {"url": os.getenv("SYN_TYPE1_URL1"), "username": os.getenv("SYN_TYPE1_USER1"), "password": os.getenv("SYN_TYPE1_PASS1")},
-    {"url": os.getenv("SYN_TYPE1_URL2"), "username": os.getenv("SYN_TYPE1_USER2"), "password": os.getenv("SYN_TYPE1_PASS2")},
-    {"url": os.getenv("SYN_TYPE1_URL3"), "username": os.getenv("SYN_TYPE1_USER3"), "password": os.getenv("SYN_TYPE1_PASS3")},
-    {"url": os.getenv("SYN_TYPE1_URL4"), "username": os.getenv("SYN_TYPE1_USER4"), "password": os.getenv("SYN_TYPE1_PASS4")}
+    {"url": validate_env_variable("SYN_TYPE1_URL1"), "username": validate_env_variable("SYN_TYPE1_USER1"), "password": validate_env_variable("SYN_TYPE1_PASS1")},
+    {"url": validate_env_variable("SYN_TYPE1_URL2"), "username": validate_env_variable("SYN_TYPE1_USER2"), "password": validate_env_variable("SYN_TYPE1_PASS2")},
+    {"url": validate_env_variable("SYN_TYPE1_URL3"), "username": validate_env_variable("SYN_TYPE1_USER3"), "password": validate_env_variable("SYN_TYPE1_PASS3")},
+    {"url": validate_env_variable("SYN_TYPE1_URL4"), "username": validate_env_variable("SYN_TYPE1_USER4"), "password": validate_env_variable("SYN_TYPE1_PASS4")}
 ]
 
 for user in syn_type1_targets:
@@ -139,8 +99,8 @@ for user in syn_type1_targets:
     fetch_and_send_data(syn_type1)
 
 syn_type2_users = [
-    {"url": os.getenv("SYN_TYPE2_URL1"), "username": os.getenv("SYN_TYPE2_USER1"), "password": os.getenv("SYN_TYPE2_PASS1")},
-    {"url": os.getenv("SYN_TYPE2_URL2"), "username": os.getenv("SYN_TYPE2_USER2"), "password": os.getenv("SYN_TYPE2_PASS2")}
+    {"url": validate_env_variable("SYN_TYPE2_URL1"), "username": validate_env_variable("SYN_TYPE2_USER1"), "password": validate_env_variable("SYN_TYPE2_PASS1")},
+    {"url": validate_env_variable("SYN_TYPE2_URL2"), "username": validate_env_variable("SYN_TYPE2_USER2"), "password": validate_env_variable("SYN_TYPE2_PASS2")}
 ]
 
 for user in syn_type2_users:
@@ -148,8 +108,8 @@ for user in syn_type2_users:
     fetch_and_send_data(syn_type2)
 
 syn_type3_users = [
-    {"url": os.getenv("SYN_TYPE3_URL1"), "username": os.getenv("SYN_TYPE3_USER1"), "password": os.getenv("SYN_TYPE3_PASS1")},
-    {"url": os.getenv("SYN_TYPE3_URL2"), "username": os.getenv("SYN_TYPE3_USER2"), "password": os.getenv("SYN_TYPE3_PASS2")}
+    {"url": validate_env_variable("SYN_TYPE3_URL1"), "username": validate_env_variable("SYN_TYPE3_USER1"), "password": validate_env_variable("SYN_TYPE3_PASS1")},
+    {"url": validate_env_variable("SYN_TYPE3_URL2"), "username": validate_env_variable("SYN_TYPE3_USER2"), "password": validate_env_variable("SYN_TYPE3_PASS2")}
 ]
 
 for user in syn_type3_users:
