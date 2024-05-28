@@ -12,6 +12,7 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    restart: always
 
   edge:
     image: selenium/node-edge:4.21.0-20240522
@@ -22,6 +23,7 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    restart: always
 
   firefox:
     image: selenium/node-firefox:4.21.0-20240522
@@ -32,6 +34,7 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    restart: always
 
   selenium-hub:
     image: selenium/hub:4.21.0-20240522
@@ -40,3 +43,4 @@ services:
       - "4442:4442"
       - "4443:4443"
       - "4444:4444"
+    restart: always
