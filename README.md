@@ -9,16 +9,13 @@
 
 `$ cd add_api`
 
-## Server 安裝套件
+## 安裝套件
 
 `$ pip install -r requirements.txt`
 
 [沒Python於此下載](https://www.python.org/downloads/)
 
-## Server 跑項目
-`$ python3 app.py`
-
-## Server .env
+## .env
 如果有`.env_example`則需要編輯各項目所需`.env`
 
 `$ cp .env_example .env`
