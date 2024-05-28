@@ -1,7 +1,7 @@
 import os
 import requests
 import pandas as pd
-from google_sheet_module import update_google_sheet
+from google_sheet_module import GoogleSheetManager  # Import the GoogleSheetManager class
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -13,7 +13,7 @@ def fetch_data(api_url):
     response.raise_for_status()  # Raise error for non-200 response
     return pd.DataFrame(response.json())
 
-if _name_ == "__main__":
+if _name_ == "__main__":  # Fix the name check
     # Define API endpoints
     api_endpoints = {
         'MAC_API': os.getenv('API_MAC'),
@@ -30,5 +30,10 @@ if _name_ == "__main__":
     # Update Google Sheet
     creds_path = os.getenv('GOOGLE_AUTH_JSON_PATH')
     spreadsheet_id = os.getenv('SPREADSHEET_ID')
-    update_google_sheet(creds_path, spreadsheet_id, data_dict)
+
+    # Create an instance of GoogleSheetManager
+    sheet_manager = GoogleSheetManager(creds_path)
+
+    # Call the update_google_sheet method
+    sheet_manager.update_google_sheet(spreadsheet_id, data_dict)
 
