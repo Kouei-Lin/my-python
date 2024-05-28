@@ -25,9 +25,6 @@
 
 `$ vim .env`
 
-## Client 跑指令
-複製貼上`command.txt`中的範例指令，`IP`改成伺服器，執行。
-
 
 ## Systemd排程
 `/etc/systmed/system`，建立`xxx.service`。
@@ -51,3 +48,8 @@ WantedBy=multi-user.target
 `sudo systemctl daemon-reload`
 
 `sudo systemctl enable xxx.service`
+
+## cron
+`$ crontab -e`
+
+`* * * * * /usr/bin/python/ /path/to/your/python.py`
