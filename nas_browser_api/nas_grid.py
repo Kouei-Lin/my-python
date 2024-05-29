@@ -6,10 +6,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from web_driver_module import WebDriverManager
+from apprise_module import Apprise
 
+# Load environment variables from .env file
 load_dotenv()
 
-class SynType:
+class SynType1:
     def __init__(self, url, username, password):
         self.url = url
         self.username = username
@@ -47,20 +49,39 @@ class SynType:
         self.web_driver_manager.quit_driver()
         return data
 
-def ntfy(data):
-    api_endpoint = os.getenv('API_ENDPOINT')
-    if api_endpoint:
-        response = requests.post(api_endpoint, json=data)
-        if response.status_code == 201:
-            print(f"Data sent successfully for URL: {data['url']}")
-        else:
-            print(f"Failed to send data for URL: {data['url']}. Status code: {response.status_code}")
-    else:
-        print("API_ENDPOINT not found in the environment variables.")
+class SynType2(SynType1):
+    def __init__(self, url, username, password):
+        super().__init__(url, username, password)
+
+    def login(self):
+        self.driver.get(self.url)
+        wait = WebDriverWait(self.driver, 120)
+        username_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_username')))
+        username_input.send_keys(self.username)
+        password_input = wait.until(EC.element_to_be_clickable((By.ID, 'login_passwd')))
+        password_input.send_keys(self.password)
+        login_button = wait.until(EC.element_to_be_clickable((By.ID, 'login-btn')))
+        login_button.click()
+
+class SynType3(SynType1):
+    def __init__(self, url, username, password):
+        super().__init__(url, username, password)
+
+    def login(self):
+        self.driver.get(self.url)
+        wait = WebDriverWait(self.driver, 60)
+        username_input = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[syno-id="username"]')))
+        username_input.send_keys(self.username)
+        advance_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[syno-id="account-panel-next-btn"]')))
+        advance_button.click()
+        password_input = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[syno-id="password"]')))
+        password_input.send_keys(self.password)
+        login_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[syno-id="password-panel-next-btn"]')))
+        login_button.click()
 
 def fetch_and_send_data(syn_instance):
     data = syn_instance.fetch_send_data()
-    ntfy(data)
+    Apprise.ntfy(data)
 
 def validate_env_variable(var_name):
     value = os.getenv(var_name)
@@ -76,7 +97,7 @@ syn_type1_targets = [
 ]
 
 for user in syn_type1_targets:
-    syn_type1 = SynType(user["url"], user["username"], user["password"])
+    syn_type1 = SynType1(user["url"], user["username"], user["password"])
     fetch_and_send_data(syn_type1)
 
 syn_type2_users = [
@@ -85,7 +106,7 @@ syn_type2_users = [
 ]
 
 for user in syn_type2_users:
-    syn_type2 = SynType(user["url"], user["username"], user["password"])
+    syn_type2 = SynType2(user["url"], user["username"], user["password"])
     fetch_and_send_data(syn_type2)
 
 syn_type3_users = [
@@ -94,6 +115,6 @@ syn_type3_users = [
 ]
 
 for user in syn_type3_users:
-    syn_type3 = SynType(user["url"], user["username"], user["password"])
+    syn_type3 = SynType3(user["url"], user["username"], user["password"])
     fetch_and_send_data(syn_type3)
 
