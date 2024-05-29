@@ -9,7 +9,7 @@ function Post-DiskUsage {
     $ipAddress = (Test-Connection -ComputerName $env:COMPUTERNAME -Count 1).IPV4Address.IPAddressToString
 
     # Define API endpoint
-    $apiUrl = "http://localhost:5000/api/disk"
+    $apiUrl = "http://localhost:5000/api/item"
 
     foreach ($disk in $diskUsage) {
         $diskData = @{

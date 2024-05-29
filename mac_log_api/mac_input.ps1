@@ -6,7 +6,7 @@ function Log-MACAddress {
     $date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
     # Define the API endpoint URL
-    $apiUrl = "http://localhost:5000/api/mac"
+    $apiUrl = "http://localhost:5000/api/item"
 
     # Get all network adapters and loop through each one
     $networkAdapters = Get-NetAdapter

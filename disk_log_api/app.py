@@ -11,13 +11,15 @@ load_dotenv()
 
 DATABASE = os.getenv('DATABASE', 'disk_data.db')
 TABLE = os.getenv('TABLE', 'disks')
-SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS nas_data (
+SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS {TABLE} (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TEXT NOT NULL,
-                        url TEXT NOT NULL,
-                        disk_status TEXT NOT NULL,
-                        cpu TEXT NOT NULL,
-                        ram TEXT NOT NULL
+                        device_id TEXT NOT NULL,
+                        volume_name TEXT NOT NULL,
+                        size INTEGER NOT NULL,
+                        free_space INTEGER NOT NULL,
+                        used_space INTEGER NOT NULL,
+                        ip TEXT NOT NULL
                     )'''
 
 HOST = os.getenv('HOST', '0.0.0.0')

@@ -80,7 +80,7 @@ class SynType3(SynType1):
 
 def fetch_and_send_data(syn_instance):
     data = syn_instance.fetch_send_data()
-    api_url = os.getenv("API_ENDPOINT")
+    api_url = os.getenv("API_URL")
     try:
         response = requests.post(api_url, json=data)
         if response.status_code == 201:
