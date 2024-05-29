@@ -1,15 +1,30 @@
 import os
-import requests
-from dotenv import load_dotenv
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from dotenv import load_dotenv
 from web_driver_module import WebDriverManager
-from apprise_module import Apprise
+from apprise import Apprise
 
 # Load environment variables from .env file
 load_dotenv()
+
+class NotificationManager:
+    def __init__(self):
+        self.notification_url = os.getenv("NOTIFICATION_URL")
+        self.apprise = Apprise()
+        if self.notification_url:
+            self.apprise.add(self.notification_url)
+        else:
+            print("Notification URL not found in environment variables.")
+
+    def send_notification(self, message):
+        if self.notification_url:
+            self.apprise.notify(body=message)
+            print("Notification sent successfully.")
+        else:
+            print("Notification URL not set. Notification not sent.")
 
 class SynType1:
     def __init__(self, url, username, password):
@@ -81,7 +96,7 @@ class SynType3(SynType1):
 
 def fetch_and_send_data(syn_instance):
     data = syn_instance.fetch_send_data()
-    Apprise.ntfy(data)
+    notification_manager.send_notification(str(data))
 
 def validate_env_variable(var_name):
     value = os.getenv(var_name)
@@ -89,6 +104,10 @@ def validate_env_variable(var_name):
         raise ValueError(f"Environment variable {var_name} is not set.")
     return value
 
+# Initialize NotificationManager
+notification_manager = NotificationManager()
+
+# Define SynType1 targets
 syn_type1_targets = [
     {"url": validate_env_variable("SYN_TYPE1_URL1"), "username": validate_env_variable("SYN_TYPE1_USER1"), "password": validate_env_variable("SYN_TYPE1_PASS1")},
     {"url": validate_env_variable("SYN_TYPE1_URL2"), "username": validate_env_variable("SYN_TYPE1_USER2"), "password": validate_env_variable("SYN_TYPE1_PASS2")},
@@ -96,24 +115,29 @@ syn_type1_targets = [
     {"url": validate_env_variable("SYN_TYPE1_URL4"), "username": validate_env_variable("SYN_TYPE1_USER4"), "password": validate_env_variable("SYN_TYPE1_PASS4")}
 ]
 
+# Fetch and send data for SynType1 targets
 for user in syn_type1_targets:
     syn_type1 = SynType1(user["url"], user["username"], user["password"])
     fetch_and_send_data(syn_type1)
 
+# Define SynType2 users
 syn_type2_users = [
     {"url": validate_env_variable("SYN_TYPE2_URL1"), "username": validate_env_variable("SYN_TYPE2_USER1"), "password": validate_env_variable("SYN_TYPE2_PASS1")},
     {"url": validate_env_variable("SYN_TYPE2_URL2"), "username": validate_env_variable("SYN_TYPE2_USER2"), "password": validate_env_variable("SYN_TYPE2_PASS2")}
 ]
 
+# Fetch and send data for SynType2 users
 for user in syn_type2_users:
     syn_type2 = SynType2(user["url"], user["username"], user["password"])
     fetch_and_send_data(syn_type2)
 
+# Define SynType3 users
 syn_type3_users = [
     {"url": validate_env_variable("SYN_TYPE3_URL1"), "username": validate_env_variable("SYN_TYPE3_USER1"), "password": validate_env_variable("SYN_TYPE3_PASS1")},
     {"url": validate_env_variable("SYN_TYPE3_URL2"), "username": validate_env_variable("SYN_TYPE3_USER2"), "password": validate_env_variable("SYN_TYPE3_PASS2")}
 ]
 
+# Fetch and send data for SynType3 users
 for user in syn_type3_users:
     syn_type3 = SynType3(user["url"], user["username"], user["password"])
     fetch_and_send_data(syn_type3)
