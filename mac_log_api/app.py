@@ -35,6 +35,6 @@ def set_date_timezone():
     current_time = datetime.now(taipei_timezone)
     request.current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
-if _name_ == '__main__':
+if __name__ == '__main__':
     app.run(host=HOST, port=PORT, debug=DEBUG)
 
