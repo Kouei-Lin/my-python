@@ -9,8 +9,8 @@ from flask import request
 # Load environment variables from .env file
 load_dotenv()
 
-DATABASE = os.getenv('DATABASE', 'disk_data.db')
-TABLE = os.getenv('TABLE', 'disks')
+DATABASE = 'disk_data.db'
+TABLE = 'disks'
 SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS {TABLE} (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TEXT NOT NULL,
