@@ -20,9 +20,9 @@ SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS {TABLE} (
                         ram TEXT NOT NULL
                     )'''
 
-HOST = os.getenv('HOST', '0.0.0.0')
-PORT = int(os.getenv('PORT', 5003))
-DEBUG = os.getenv('DEBUG', 'true').lower() in ['true', '1', 't', 'y', 'yes']
+HOST = '0.0.0.0'
+PORT = 5003
+DEBUG = True
 
 # Initialize NotificationManager
 notification_manager = NotificationManager()
