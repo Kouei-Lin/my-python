@@ -10,13 +10,13 @@ import requests
 # Load environment variables from .env file
 load_dotenv()
 
-class SynType1:
+class SynType1(WebDriverManager):
     def __init__(self, url, username, password):
+        super().__init__()
         self.url = url
         self.username = username
         self.password = password
-        self.web_driver_manager = WebDriverManager()
-        self.driver = self.web_driver_manager.get_driver()
+        self.driver = self.get_driver()
 
     def login(self):
         self.driver.get(self.url)
@@ -45,13 +45,10 @@ class SynType1:
         self.login()
         info = self.get_info()
         data = {"url": self.url, **info}
-        self.web_driver_manager.quit_driver()
+        self.quit_driver()
         return data
 
 class SynType2(SynType1):
-    def __init__(self, url, username, password):
-        super().__init__(url, username, password)
-
     def login(self):
         self.driver.get(self.url)
         wait = WebDriverWait(self.driver, 120)
@@ -63,9 +60,6 @@ class SynType2(SynType1):
         login_button.click()
 
 class SynType3(SynType1):
-    def __init__(self, url, username, password):
-        super().__init__(url, username, password)
-
     def login(self):
         self.driver.get(self.url)
         wait = WebDriverWait(self.driver, 60)
@@ -110,14 +104,14 @@ for user in syn_type1_targets:
     fetch_and_send_data(syn_type1)
 
 # Define SynType2 user
-syn_type2_user = {
-    "url": validate_env_variable("SYN_TYPE2_URL"),
-    "username": validate_env_variable("SYN_TYPE2_USER"),
-    "password": validate_env_variable("SYN_TYPE2_PASS")
-}
+syn_type2_users = [
+    {"url": validate_env_variable("SYN_TYPE2_URL1"), "username": validate_env_variable("SYN_TYPE2_USER1"), "password": validate_env_variable("SYN_TYPE2_PASS1")}
+]
 
-syn_type2 = SynType2(syn_type2_user["url"], syn_type2_user["username"], syn_type2_user["password"])
-fetch_and_send_data(syn_type2)
+# Fetch and send data for SynType2 users
+for user in syn_type2_users:
+    syn_type2 = SynType2(user["url"], user["username"], user["password"])
+    fetch_and_send_data(syn_type2)
 
 # Define SynType3 users
 syn_type3_users = [
