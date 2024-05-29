@@ -11,7 +11,7 @@ load_dotenv()
 
 DATABASE = os.getenv('DATABASE', 'nas_data.db')
 TABLE = os.getenv('TABLE', 'nas_data')
-SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS nas_data (
+SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS {TABLE} (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TEXT NOT NULL,
                         url TEXT NOT NULL,
