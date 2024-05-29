@@ -22,9 +22,9 @@ SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS {TABLE} (
                         ip TEXT NOT NULL
                     )'''
 
-HOST = os.getenv('HOST', '0.0.0.0')
-PORT = int(os.getenv('PORT', 5001))
-DEBUG = os.getenv('DEBUG', 'true').lower() in ['true', '1', 't', 'y', 'yes']
+HOST = '0.0.0.0'
+PORT = 5001
+DEBUG = True
 
 notification_manager = NotificationManager()
 app, create_database = create_app(DATABASE, TABLE, notification_manager.send_notification)
