@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask_api_module import create_app
+from flask_api_module import FlaskAPIModule
 from apprise_module import NotificationManager
 from datetime import datetime
 from pytz import timezone
@@ -9,8 +9,8 @@ from flask import request
 # Load environment variables from .env file
 load_dotenv()
 
-DATABASE = 'nas_data.db'
-TABLE = 'nas_data'
+DATABASE = os.getenv('DATABASE', 'nas_data.db')
+TABLE = os.getenv('TABLE', 'nas_data')
 SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS {TABLE} (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TEXT NOT NULL,
@@ -27,15 +27,20 @@ DEBUG = True
 # Initialize NotificationManager
 notification_manager = NotificationManager()
 
-# Create the Flask app with the notification manager's send_notification method
-app, create_database = create_app(DATABASE, TABLE, notification_manager.send_notification)
-create_database(SQL_CREATE_TABLE)
+class CustomFlaskApp(FlaskAPIModule):
+    def __init__(self, database, table, send_notification):
+        super().__init__(database, table, send_notification)
+        self.app.before_request(self.set_date_timezone)
 
-@app.before_request
-def set_date_timezone():
-    taipei_timezone = timezone('Asia/Taipei')
-    current_time = datetime.now(taipei_timezone)
-    request.current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+    def set_date_timezone(self):
+        taipei_timezone = timezone('Asia/Taipei')
+        current_time = datetime.now(taipei_timezone)
+        request.current_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+
+# Create an instance of CustomFlaskApp
+custom_flask_app = CustomFlaskApp(DATABASE, TABLE, notification_manager.send_notification)
+app = custom_flask_app.app
+custom_flask_app.create_database(SQL_CREATE_TABLE)
 
 if __name__ == '__main__':
     app.run(host=HOST, port=PORT, debug=DEBUG)

@@ -3,20 +3,28 @@ import sqlite3
 from datetime import datetime
 from pytz import timezone
 
-def create_app(database, table, send_notification):
-    app = Flask(__name__)
-    app.config['DATABASE'] = database
-    app.config['TABLE'] = table
+class FlaskAPIModule:
+    def __init__(self, database, table, send_notification):
+        self.app = Flask(__name__)
+        self.app.config['DATABASE'] = database
+        self.app.config['TABLE'] = table
+        self.send_notification = send_notification
 
-    def create_database(sql_create_table):
-        conn = sqlite3.connect(app.config['DATABASE'])
+        # Define routes
+        self.app.add_url_rule('/api/item', 'add_item', self.add_item, methods=['POST'])
+        self.app.add_url_rule('/api/item', 'get_items', self.get_items, methods=['GET'])
+        self.app.add_url_rule('/api/item/<int:id>', 'get_item', self.get_item, methods=['GET'])
+        self.app.add_url_rule('/api/item/<int:id>', 'update_item', self.update_item, methods=['PUT'])
+        self.app.add_url_rule('/api/item/<int:id>', 'delete_item', self.delete_item, methods=['DELETE'])
+
+    def create_database(self, sql_create_table):
+        conn = sqlite3.connect(self.app.config['DATABASE'])
         cursor = conn.cursor()
         cursor.execute(sql_create_table)
         conn.commit()
         conn.close()
 
-    @app.route('/api/item', methods=['POST'])
-    def add_item():
+    def add_item(self):
         new_item = request.json
 
         # Set current datetime in Taipei timezone if not provided
@@ -24,23 +32,22 @@ def create_app(database, table, send_notification):
             taipei_timezone = timezone('Asia/Taipei')
             new_item['date'] = datetime.now(taipei_timezone).strftime('%Y-%m-%d %H:%M:%S')
 
-        conn = sqlite3.connect(app.config['DATABASE'])
+        conn = sqlite3.connect(self.app.config['DATABASE'])
         cursor = conn.cursor()
         columns = ', '.join(new_item.keys())
         placeholders = ', '.join('?' for _ in new_item)
         values = tuple(new_item.values())
-        cursor.execute(f'INSERT INTO {app.config["TABLE"]} ({columns}) VALUES ({placeholders})', values)
+        cursor.execute(f'INSERT INTO {self.app.config["TABLE"]} ({columns}) VALUES ({placeholders})', values)
         conn.commit()
         conn.close()
 
-        send_notification(f"New item added: {new_item}")
+        self.send_notification(f"New item added: {new_item}")
         return jsonify({"message": "Item added successfully"}), 201
 
-    @app.route('/api/item', methods=['GET'])
-    def get_items():
-        conn = sqlite3.connect(app.config['DATABASE'])
+    def get_items(self):
+        conn = sqlite3.connect(self.app.config['DATABASE'])
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM {app.config['TABLE']}")
+        cursor.execute(f"SELECT * FROM {self.app.config['TABLE']}")
         items = cursor.fetchall()
         columns = [col[0] for col in cursor.description]
         conn.close()
@@ -48,11 +55,10 @@ def create_app(database, table, send_notification):
         items_with_keys = [{columns[i]: item[i] for i in range(len(columns))} for item in items]
         return jsonify(items_with_keys)
 
-    @app.route('/api/item/<int:id>', methods=['GET'])
-    def get_item(id):
-        conn = sqlite3.connect(app.config['DATABASE'])
+    def get_item(self, id):
+        conn = sqlite3.connect(self.app.config['DATABASE'])
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM {app.config['TABLE']} WHERE id=?", (id,))
+        cursor.execute(f"SELECT * FROM {self.app.config['TABLE']} WHERE id=?", (id,))
         item = cursor.fetchone()
         conn.close()
 
@@ -62,37 +68,34 @@ def create_app(database, table, send_notification):
             return jsonify(item_with_keys)
         return jsonify({"message": "Item not found"}), 404
 
-    @app.route('/api/item/<int:id>', methods=['PUT'])
-    def update_item(id):
+    def update_item(self, id):
         updated_item = request.json
-        conn = sqlite3.connect(app.config['DATABASE'])
+        conn = sqlite3.connect(self.app.config['DATABASE'])
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM {app.config['TABLE']} WHERE id=?", (id,))
+        cursor.execute(f"SELECT * FROM {self.app.config['TABLE']} WHERE id=?", (id,))
         item = cursor.fetchone()
         if item:
             columns = ', '.join(f'{k}=?' for k in updated_item.keys())
             values = tuple(updated_item.values()) + (id,)
-            cursor.execute(f'UPDATE {app.config["TABLE"]} SET {columns} WHERE id=?', values)
+            cursor.execute(f'UPDATE {self.app.config["TABLE"]} SET {columns} WHERE id=?', values)
             conn.commit()
             conn.close()
 
-            send_notification(f"Item updated: {updated_item}")
+            self.send_notification(f"Item updated: {updated_item}")
             return jsonify({"message": "Item updated successfully"})
         return jsonify({"message": "Item not found"}), 404
 
-    @app.route('/api/item/<int:id>', methods=['DELETE'])
-    def delete_item(id):
-        conn = sqlite3.connect(app.config['DATABASE'])
+    def delete_item(self, id):
+        conn = sqlite3.connect(self.app.config['DATABASE'])
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM {app.config['TABLE']} WHERE id=?", (id,))
+        cursor.execute(f"SELECT * FROM {self.app.config['TABLE']} WHERE id=?", (id,))
         item = cursor.fetchone()
         if item:
-            cursor.execute(f"DELETE FROM {app.config['TABLE']} WHERE id=?", (id,))
+            cursor.execute(f"DELETE FROM {self.app.config['TABLE']} WHERE id=?", (id,))
             conn.commit()
             conn.close()
 
-            send_notification("Item deleted")
+            self.send_notification("Item deleted")
             return jsonify({"message": "Item deleted successfully"})
         return jsonify({"message": "Item not found"}), 404
 
-    return app, create_database
