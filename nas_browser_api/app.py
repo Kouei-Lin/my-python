@@ -9,8 +9,8 @@ from flask import request
 # Load environment variables from .env file
 load_dotenv()
 
-DATABASE = os.getenv('DATABASE', 'nas_data.db')
-TABLE = os.getenv('TABLE', 'nas_data')
+DATABASE = 'nas_data.db'
+TABLE = 'nas_data'
 SQL_CREATE_TABLE = f'''CREATE TABLE IF NOT EXISTS {TABLE} (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TEXT NOT NULL,
