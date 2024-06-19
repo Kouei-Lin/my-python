@@ -1,0 +1,4 @@
+sudo -i
+vi /etc/systemd/system/reboot_app.service
+sudo systemctl start reboot_app.service
+sudo systemctl enable reboo_app.service
