@@ -1,5 +1,3 @@
-# API測試項目
-
 ## 下載Repo
 `$ git clone https://github.com/Kouei-Lin/my-python-api`
 
