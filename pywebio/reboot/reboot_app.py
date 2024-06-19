@@ -9,7 +9,6 @@ def main():
     put_markdown('# Reboot System')
    
     def reboot_callback(btn):
-        run_js('window.location.reload()')
         if btn == 'Reboot':
             run_shell("sudo reboot")
     
