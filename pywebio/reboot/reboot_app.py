@@ -15,5 +15,5 @@ def main():
     
     put_buttons(['Reboot'], onclick=reboot_callback)
     
-if name == '__main__':
+if __name__ == '__main__':
     start_server(main, debug=True, port=8080)  # Use port 8080 or another available port
