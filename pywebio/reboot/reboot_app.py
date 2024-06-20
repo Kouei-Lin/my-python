@@ -10,9 +10,13 @@ def main():
    
     def reboot_callback(btn):
         if btn == 'Reboot':
-            run_shell("sudo reboot")
+            user_confirmed = confirm("Are you sure you want to reboot?")
+            if user_confirmed:
+                run_shell("sudo reboot")
     
     put_buttons(['Reboot'], onclick=reboot_callback)
     
 if __name__ == '__main__':
-    start_server(main, debug=True, port=8080)  # Use port 8080 or another available port
+    start_server(main, debug=True, port=18080)
+
+
